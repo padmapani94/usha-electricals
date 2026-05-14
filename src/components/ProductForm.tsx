@@ -8,6 +8,7 @@ import { getCurrentUser, isAdmin } from "@/lib/auth";
 import type { Category, Product } from "@/lib/types";
 import { ShieldCheck, PencilRuler, Hash } from "lucide-react";
 import TagsInput from "@/components/TagsInput";
+import ImageUploader from "@/components/ImageUploader";
 
 export default function ProductForm({ initial }: { initial?: Product }) {
   const router = useRouter();
@@ -37,12 +38,12 @@ export default function ProductForm({ initial }: { initial?: Product }) {
     tags: initial?.tags ?? [],
   } as Product);
 
-  const [imagesText, setImagesText] = useState((initial?.images ?? []).join("\n"));
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(""); setBusy(true);
     try {
-      const images = imagesText.split("\n").map((s) => s.trim()).filter(Boolean);
+      if (images.length === 0) throw new Error("Please add at least one product image.");
       let specsObj: Record<string, string> = {};
       try { specsObj = JSON.parse(typeof form.specs === "string" ? form.specs : "{}"); } catch { throw new Error("Specs must be valid JSON"); }
       const payload = { ...form, images, specs: specsObj };
@@ -126,10 +127,9 @@ export default function ProductForm({ initial }: { initial?: Product }) {
       </div>
 
       <div>
-        <label className="label">Image URLs (one per line)</label>
-        <textarea className="input" rows={3} value={imagesText} onChange={(e) => setImagesText(e.target.value)}
-          placeholder="https://example.com/image1.jpg" />
-        <p className="text-xs text-slate-500 mt-1">Use Appwrite Storage URLs or any public image URL.</p>
+        <label className="label">Product Images *</label>
+        <ImageUploader value={images} onChange={setImages} />
+        <p className="text-xs text-slate-500 mt-1">First image is shown as the main thumbnail. Drag to reorder using the arrows on hover.</p>
       </div>
 
       <div>
