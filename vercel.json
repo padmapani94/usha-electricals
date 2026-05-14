@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.ushaelectricals.co.in" }],
+      "destination": "https://ushaelectricals.co.in/:path*",
+      "permanent": true
+    }
+  ]
+}
