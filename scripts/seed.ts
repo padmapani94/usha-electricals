@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
-import "dotenv/config";
+import { config } from "dotenv";
+import { existsSync } from "fs";
+config({ path: existsSync(".env.local") ? ".env.local" : ".env" });
 import { Client, Databases, ID } from "node-appwrite";
 import { products, categories } from "../src/lib/seed-data";
 

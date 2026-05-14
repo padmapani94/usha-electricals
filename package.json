@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "setup": "tsx scripts/setup-appwrite.ts",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
