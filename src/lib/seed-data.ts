@@ -302,10 +302,10 @@ export const clients = [
 ];
 
 export const services = [
-  { title: "Electrification & T/F Commissioning", description: "Total layout electrification with sanction from MSEDCL / Electrical Inspector Department." },
-  { title: "Home Electrical & Lighting Supply", description: "Branded electrical material at higher discount than MRP." },
-  { title: "MSEDCL Approved Energy Metering", description: "Sub-meters with connection co-ordination." },
-  { title: "Street Light & Highmast", description: "End-to-end lighting installation for roads, grounds and townships." },
-  { title: "Electrical Automation & Panels", description: "PLC, APFC, MCC, PCC and Industrial IoT panel building." },
-  { title: "Comprehensive AMC & UPS Repair", description: "1-Phase & 3-Phase comprehensive AMC and on-site UPS repair." },
+  { title: "Metering Cubicle", description: "Custom-built HT metering cubicles with CT/PT chambers for utility tie-ups and consumer connections — MSEDCL/discom compliant." },
+  { title: "CT & PT Repair", description: "On-site and workshop repair of Current & Potential Transformers — re-winding, insulation rebuild, ratio correction and final testing." },
+  { title: "Epoxy CT/PT Fixing", description: "Supply and installation of epoxy resin-cast CT/PT units in metering panels, indoor and outdoor, sized to your load and accuracy class." },
+  { title: "Testing of CT & PT", description: "Ratio, polarity, burden, insulation resistance and routine testing of CTs and PTs as per IS/IEC 61869 standards." },
+  { title: "Electrical Licensing", description: "Liaison and documentation for new electrical connections, contractor licensing renewals and MSEDCL/Electrical Inspector approvals." },
+  { title: "APFC — Automatic Power Factor", description: "Design, supply and commissioning of APFC panels — capacitor banks, EPCOS controllers and harmonic filters for optimal power factor." },
 ];
