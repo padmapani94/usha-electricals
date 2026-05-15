@@ -1,14 +1,6 @@
 import type { Category, Product } from "./types";
 
 export const categories: Category[] = [
-  { name: "UPS Systems", slug: "ups-systems", description: "Line interactive, online & industrial UPS for every load." },
-  { name: "Inverters & Batteries", slug: "inverters-batteries", description: "Home inverters, tubular & SMF batteries from trusted brands." },
-  { name: "Stabilizers & Transformers", slug: "stabilizers-transformers", description: "1-Phase & 3-Phase stabilizers, isolation transformers, OVCD." },
-  { name: "Electrical Panels", slug: "electrical-panels", description: "APFC panels, PLC systems, retrofication and panel building." },
-  { name: "Solar Systems", slug: "solar-systems", description: "On-grid & off-grid solar with net-metering support." },
-  { name: "Networking", slug: "networking", description: "Routers, switches and power distribution units." },
-  { name: "Meters & Monitoring", slug: "meters-monitoring", description: "Multifunction meters, MSEDCL approved energy meters & sub-meters." },
-  { name: "Lighting & Wiring", slug: "lighting-wiring", description: "Street lights, highmast and home wiring material at discount." },
   { name: "Testing Equipment", slug: "testing-equipment", description: "Insulation testers, earth testers, megohmmeters and load test kits." },
   { name: "Measuring Instruments", slug: "measuring-instruments", description: "Multimeters, clamp meters, calibrators and oscilloscopes for site & lab." },
   { name: "Electrical", slug: "electrical", description: "Switches, MCBs, RCCBs, contactors, relays and general electrical accessories." },
