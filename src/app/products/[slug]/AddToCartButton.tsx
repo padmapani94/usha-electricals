@@ -40,7 +40,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
         <ShoppingCart size={16} className="mr-1" /> Add to Cart
       </button>
       <button className="btn-secondary" disabled={product.stock <= 0} onClick={() => handleAdd(true)}>
-        Buy Now
+        Send Enquiry →
       </button>
     </div>
   );

@@ -28,7 +28,7 @@ export default function AdminOrdersPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-navy">Orders ({orders.length})</h1>
+        <h1 className="text-2xl font-bold text-navy">Enquiries ({orders.length})</h1>
         <select className="input w-auto" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
           <option value="all">All statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -38,7 +38,7 @@ export default function AdminOrdersPage() {
       {loading ? (
         <div className="text-slate-500">Loading…</div>
       ) : filtered.length === 0 ? (
-        <div className="card p-10 text-center text-slate-500">No orders.</div>
+        <div className="card p-10 text-center text-slate-500">No enquiries.</div>
       ) : (
         <div className="space-y-3">
           {filtered.map((o) => {

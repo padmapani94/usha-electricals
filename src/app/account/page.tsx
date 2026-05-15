@@ -26,8 +26,8 @@ export default function AccountPage() {
       <div className="grid md:grid-cols-2 gap-5">
         <Link href="/account/orders" className="card p-6 hover:border-brand-orange transition">
           <Package className="text-brand-orange mb-3" />
-          <h3 className="font-bold text-navy">My Orders</h3>
-          <p className="text-sm text-slate-500 mt-1">View order history and track shipments.</p>
+          <h3 className="font-bold text-navy">My Enquiries</h3>
+          <p className="text-sm text-slate-500 mt-1">View product enquiries you've sent &amp; their status.</p>
         </Link>
         <Link href="/products" className="card p-6 hover:border-brand-orange transition">
           <ShoppingBag className="text-brand-orange mb-3" />

@@ -27,12 +27,14 @@ function OrdersInner() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-navy mb-2">My Orders</h1>
-      <p className="text-slate-500 mb-6">All your orders &amp; their current status.</p>
+      <h1 className="text-3xl font-bold text-navy mb-2">My Enquiries</h1>
+      <p className="text-slate-500 mb-6">All product enquiries you've sent &amp; their current status.</p>
 
       {placed && (
         <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded mb-6">
-          <strong>Order placed successfully!</strong> Our team will reach out to you on the registered phone within 24 hours.
+          <strong>
+            {placed === "whatsapp" ? "Enquiry sent via WhatsApp!" : placed === "email" ? "Enquiry email opened!" : "Enquiry sent!"}
+          </strong> If the {placed === "email" ? "email" : "WhatsApp"} window didn't open, just call us at <a href="tel:9356913565" className="underline font-semibold">93569 13565</a>. We respond within 24 hours.
         </div>
       )}
 
@@ -40,8 +42,8 @@ function OrdersInner() {
         <div className="text-slate-500">Loading orders…</div>
       ) : orders.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-slate-500">You haven't placed any orders yet.</p>
-          <Link href="/products" className="btn-primary mt-4 inline-flex">Start shopping</Link>
+          <p className="text-slate-500">You haven't sent any enquiries yet.</p>
+          <Link href="/products" className="btn-primary mt-4 inline-flex">Browse products</Link>
         </div>
       ) : (
         <div className="space-y-4">

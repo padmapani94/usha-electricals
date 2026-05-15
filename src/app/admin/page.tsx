@@ -27,9 +27,9 @@ export default function AdminDashboard() {
       <p className="text-slate-500 mb-6">Overview of your store.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat label="Products" value={stats.products.toString()} href="/admin/products" />
-        <Stat label="Total Orders" value={stats.orders.toString()} href="/admin/orders" />
-        <Stat label="Pending Orders" value={stats.pending.toString()} href="/admin/orders" />
-        <Stat label="Total Revenue" value={`₹${stats.revenue.toLocaleString("en-IN")}`} />
+        <Stat label="Total Enquiries" value={stats.orders.toString()} href="/admin/orders" />
+        <Stat label="Pending Enquiries" value={stats.pending.toString()} href="/admin/orders" />
+        <Stat label="Estimated Value" value={`₹${stats.revenue.toLocaleString("en-IN")}`} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4 mt-8">
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
           <p className="text-sm text-slate-500 mt-1">Add new items to the catalog with images, specs &amp; price.</p>
         </Link>
         <Link href="/admin/orders" className="card p-6 hover:border-brand-orange">
-          <h3 className="font-semibold text-navy">Manage orders</h3>
+          <h3 className="font-semibold text-navy">Manage enquiries</h3>
           <p className="text-sm text-slate-500 mt-1">Update status: pending → confirmed → shipped → delivered.</p>
         </Link>
       </div>

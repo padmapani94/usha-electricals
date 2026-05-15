@@ -55,17 +55,18 @@ export default function CartPage() {
         </div>
 
         <div className="card p-6 h-fit lg:sticky lg:top-24 hidden lg:block">
-          <h3 className="font-semibold text-navy mb-4">Order Summary</h3>
+          <h3 className="font-semibold text-navy mb-4">Cart Summary</h3>
           <div className="flex justify-between text-sm py-2 border-b">
             <span>Subtotal</span><span>₹{total.toLocaleString("en-IN")}</span>
           </div>
           <div className="flex justify-between text-sm py-2 border-b">
-            <span>Shipping</span><span className="text-green-600">Calculated at checkout</span>
+            <span>Shipping</span><span className="text-slate-500">Confirmed via enquiry</span>
           </div>
           <div className="flex justify-between font-bold text-lg py-3">
-            <span>Total</span><span>₹{total.toLocaleString("en-IN")}</span>
+            <span>Estimated Total</span><span>₹{total.toLocaleString("en-IN")}</span>
           </div>
-          <button className="btn-primary w-full" onClick={() => router.push("/checkout")}>Proceed to Checkout</button>
+          <button className="btn-primary w-full" onClick={() => router.push("/checkout")}>Send Enquiry →</button>
+          <p className="text-xs text-slate-500 text-center mt-2">No online payment. Quote &amp; payment via WhatsApp/Email.</p>
           <Link href="/products" className="block text-center text-sm text-brand-orange mt-3 hover:underline">Continue shopping</Link>
         </div>
       </div>
@@ -76,8 +77,8 @@ export default function CartPage() {
           <div className="text-[10px] uppercase text-slate-500">Total</div>
           <div className="font-bold text-navy text-lg leading-tight">₹{total.toLocaleString("en-IN")}</div>
         </div>
-        <button className="btn-primary flex-1 max-w-[220px]" onClick={() => router.push("/checkout")}>
-          Checkout →
+        <button className="btn-primary flex-1 max-w-[240px]" onClick={() => router.push("/checkout")}>
+          Send Enquiry →
         </button>
       </div>
     </div>

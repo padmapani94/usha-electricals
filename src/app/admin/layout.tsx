@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/categories", label: "Categories", icon: FolderTree },
-    { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { href: "/admin/orders", label: "Enquiries", icon: ShoppingBag },
   ];
   const editorNav = [
     { href: "/admin/products", label: "Products", icon: Package },
