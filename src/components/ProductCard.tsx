@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
-import { Eye, ShoppingCart } from "lucide-react";
+import { Eye, MessageCircle, ShoppingCart } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/store/cart";
 import { useToasts } from "@/store/toasts";
+import { buildEnquiryMessage, whatsappLink } from "@/lib/enquiry";
 
 export default function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
@@ -22,6 +23,19 @@ export default function ProductCard({ product }: { product: Product }) {
       quantity: 1,
     });
     toast({ message: `Added "${product.name}" to cart` });
+  };
+
+  const handleQuickWhatsApp = () => {
+    const item = {
+      productId: product.$id ?? product.slug,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      image: product.images?.[0],
+      quantity: 1,
+    };
+    const message = buildEnquiryMessage([item], product.price);
+    window.open(whatsappLink(message), "_blank");
   };
 
   return (
@@ -53,19 +67,28 @@ export default function ProductCard({ product }: { product: Product }) {
         <Link href={`/products/${product.slug}`} className="font-semibold text-navy mt-1 hover:text-brand-orange line-clamp-2">
           {product.name}
         </Link>
-        <div className="mt-auto pt-3 flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold text-navy">₹{product.price.toLocaleString("en-IN")}</span>
-            {product.mrp && product.mrp > product.price && (
-              <span className="text-xs text-slate-400 line-through ml-2">₹{product.mrp.toLocaleString("en-IN")}</span>
-            )}
+        <div className="mt-auto pt-3">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <span className="text-lg font-bold text-navy">₹{product.price.toLocaleString("en-IN")}</span>
+              {product.mrp && product.mrp > product.price && (
+                <span className="text-xs text-slate-400 line-through ml-2">₹{product.mrp.toLocaleString("en-IN")}</span>
+              )}
+            </div>
+            <button
+              disabled={product.stock <= 0}
+              className="btn-primary text-xs disabled:opacity-40 group/btn"
+              onClick={handleAdd}
+            >
+              <ShoppingCart size={14} className="mr-1 group-hover/btn:rotate-[-8deg] transition" /> Add
+            </button>
           </div>
           <button
             disabled={product.stock <= 0}
-            className="btn-primary text-xs disabled:opacity-40 group/btn"
-            onClick={handleAdd}
+            onClick={handleQuickWhatsApp}
+            className="w-full inline-flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5b] disabled:opacity-40 text-white text-xs font-semibold rounded px-2 py-1.5 transition"
           >
-            <ShoppingCart size={14} className="mr-1 group-hover/btn:rotate-[-8deg] transition" /> Add
+            <MessageCircle size={12} /> Quick Enquiry on WhatsApp
           </button>
         </div>
       </div>
