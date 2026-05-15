@@ -9,6 +9,11 @@ export const categories: Category[] = [
   { name: "Networking", slug: "networking", description: "Routers, switches and power distribution units." },
   { name: "Meters & Monitoring", slug: "meters-monitoring", description: "Multifunction meters, MSEDCL approved energy meters & sub-meters." },
   { name: "Lighting & Wiring", slug: "lighting-wiring", description: "Street lights, highmast and home wiring material at discount." },
+  { name: "Testing Equipment", slug: "testing-equipment", description: "Insulation testers, earth testers, megohmmeters and load test kits." },
+  { name: "Measuring Instruments", slug: "measuring-instruments", description: "Multimeters, clamp meters, calibrators and oscilloscopes for site & lab." },
+  { name: "Electrical", slug: "electrical", description: "Switches, MCBs, RCCBs, contactors, relays and general electrical accessories." },
+  { name: "Power Tools", slug: "power-tools", description: "Drills, grinders, impact drivers and corded/cordless power tools for industrial use." },
+  { name: "Hand Tools", slug: "hand-tools", description: "Pliers, screwdrivers, wrench sets, cable cutters and electrician hand tools." },
 ];
 
 const img = (q: string) => `https://images.unsplash.com/${q}?auto=format&fit=crop&w=1000&q=80`;
