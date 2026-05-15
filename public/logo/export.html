@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Logo PNG Exporter · Usha Electricals</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: Inter, system-ui, sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 16px; color: #1e3a5f; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    p.lede { color: #64748b; margin: 0 0 24px; }
+    h2 { margin: 28px 0 10px; font-size: 18px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 16px; background: #fff; }
+    .row { display: flex; gap: 18px; align-items: center; }
+    .preview { width: 200px; height: 100px; display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#eee 0% 25%, white 0% 50%) 50% / 16px 16px; border-radius: 6px; overflow: hidden; }
+    .preview.dark { background: #0f172a; }
+    .preview img { max-width: 100%; max-height: 100%; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+    button { font-family: inherit; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #1e3a5f; font-size: 13px; font-weight: 500; transition: .15s; }
+    button:hover { background: #1e3a5f; color: white; border-color: #1e3a5f; }
+    button.primary { background: #f97316; color: white; border-color: #f97316; }
+    button.primary:hover { background: #ea580c; }
+    .name { font-weight: 600; min-width: 220px; }
+    .hint { font-size: 12px; color: #64748b; margin-top: 6px; }
+    .footer { margin-top: 32px; font-size: 13px; color: #64748b; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <h1>📥 Logo PNG Exporter</h1>
+  <p class="lede">Click a size to download that variant as a transparent PNG. All four logo variants below come from <code>public/logo/*.svg</code> and match what's used on the website header.</p>
+
+  <button class="primary" id="download-all">⬇️ Download all standard sizes (ZIP not needed — saves each file)</button>
+  <p class="hint">Tip: in Chrome, set <em>Settings → Downloads → "Ask where to save"</em> off, otherwise you'll get a prompt for each file.</p>
+
+  <div id="root"></div>
+
+  <p class="footer">Brand colours: Navy <code>#1e3a5f</code> · Orange <code>#f97316</code>. SVG files are best for print — these PNGs are for situations that require raster (Instagram, WhatsApp, etc).</p>
+
+  <script>
+    const variants = [
+      { file: "logo-mark.svg", name: "Logo Mark (square)", sizes: [64, 128, 256, 512, 1024, 2048], dark: false, native: 256 },
+      { file: "logo-horizontal.svg", name: "Horizontal Lockup", sizes: [400, 800, 1500, 3000, 5000], dark: false, native: 1000 },
+      { file: "logo-horizontal-white.svg", name: "Horizontal — White (for dark backgrounds)", sizes: [400, 800, 1500, 3000], dark: true, native: 1000 },
+      { file: "logo-stacked.svg", name: "Stacked Lockup", sizes: [512, 1024, 2048, 3000], dark: false, native: 600 },
+    ];
+
+    const root = document.getElementById("root");
+
+    async function svgToPng(svgUrl, width) {
+      const res = await fetch(svgUrl);
+      const text = await res.text();
+      const blob = new Blob([text], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      await new Promise((ok, fail) => { img.onload = ok; img.onerror = fail; img.src = url; });
+      // determine aspect ratio from natural size
+      const ratio = img.naturalHeight / img.naturalWidth;
+      const w = width;
+      const h = Math.round(width * ratio);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      return await new Promise(r => canvas.toBlob(r, "image/png"));
+    }
+
+    async function downloadOne(file, width, dark) {
+      const blob = await svgToPng(file, width);
+      const link = document.createElement("a");
+      const stem = file.replace(/\.svg$/, "");
+      link.download = `${stem}-${width}.png`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+    }
+
+    for (const v of variants) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="row">
+          <div class="preview ${v.dark ? "dark" : ""}"><img src="${v.file}" alt="" /></div>
+          <div style="flex:1">
+            <div class="name">${v.name}</div>
+            <div class="hint">SVG source: <code>${v.file}</code></div>
+            <div class="buttons" style="margin-top:10px;">
+              ${v.sizes.map(s => `<button data-file="${v.file}" data-size="${s}">${s}px</button>`).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+      root.appendChild(card);
+    }
+
+    root.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t.tagName === "BUTTON" && t.dataset.file) {
+        downloadOne(t.dataset.file, Number(t.dataset.size));
+      }
+    });
+
+    document.getElementById("download-all").addEventListener("click", async () => {
+      for (const v of variants) {
+        for (const s of v.sizes) {
+          await downloadOne(v.file, s);
+          await new Promise(r => setTimeout(r, 250));
+        }
+      }
+    });
+  </script>
+</body>
+</html>
