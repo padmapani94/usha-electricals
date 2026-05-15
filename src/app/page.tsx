@@ -179,18 +179,25 @@ export default async function HomePage() {
 
       {/* SERVICES */}
       <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-        <Reveal><Heading eyebrow="What we do" title="Our Services" /></Reveal>
+        <div className="flex items-end justify-between flex-wrap gap-4">
+          <Reveal><Heading eyebrow="What we do" title="Our Services" /></Reveal>
+          <Reveal delay={100}>
+            <Link href="/services" className="text-sm font-medium text-brand-orange hover:underline group">
+              View all services <span className="inline-block group-hover:translate-x-1 transition">→</span>
+            </Link>
+          </Reveal>
+        </div>
         <div className="grid md:grid-cols-3 gap-5 mt-8">
           {services.map((s, i) => (
             <Reveal key={s.title} delay={i * 80}>
-              <div className="card p-6 group hover:-translate-y-1 hover:shadow-xl hover:border-brand-orange transition-all duration-300 relative overflow-hidden">
+              <Link href={`/services#${s.slug}`} className="card p-6 group hover:-translate-y-1 hover:shadow-xl hover:border-brand-orange transition-all duration-300 relative overflow-hidden block">
                 <div aria-hidden className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-brand-orange/5 group-hover:bg-brand-orange/15 transition" />
                 <div className="relative bg-brand-orange/10 text-brand-orange rounded-md w-11 h-11 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-brand-orange group-hover:text-white transition">
                   <Wrench size={20} />
                 </div>
-                <h3 className="font-semibold text-navy">{s.title}</h3>
+                <h3 className="font-semibold text-navy group-hover:text-brand-orange transition">{s.title}</h3>
                 <p className="text-sm text-slate-600 mt-1">{s.description}</p>
-              </div>
+              </Link>
             </Reveal>
           ))}
         </div>

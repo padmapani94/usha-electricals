@@ -301,11 +301,98 @@ export const clients = [
   "VNIT Nagpur", "PWD Maharashtra",
 ];
 
-export const services = [
-  { title: "Metering Cubicle", description: "Custom-built HT metering cubicles with CT/PT chambers for utility tie-ups and consumer connections — MSEDCL/discom compliant." },
-  { title: "CT & PT Repair", description: "On-site and workshop repair of Current & Potential Transformers — re-winding, insulation rebuild, ratio correction and final testing." },
-  { title: "Epoxy CT/PT Fixing", description: "Supply and installation of epoxy resin-cast CT/PT units in metering panels, indoor and outdoor, sized to your load and accuracy class." },
-  { title: "Testing of CT & PT", description: "Ratio, polarity, burden, insulation resistance and routine testing of CTs and PTs as per IS/IEC 61869 standards." },
-  { title: "Electrical Licensing", description: "Liaison and documentation for new electrical connections, contractor licensing renewals and MSEDCL/Electrical Inspector approvals." },
-  { title: "APFC — Automatic Power Factor", description: "Design, supply and commissioning of APFC panels — capacitor banks, EPCOS controllers and harmonic filters for optimal power factor." },
+export type Service = {
+  slug: string;
+  title: string;
+  description: string;
+  longDescription: string;
+  image: string;
+  features: string[];
+};
+
+export const services: Service[] = [
+  {
+    slug: "metering-cubicle",
+    title: "Metering Cubicle",
+    description: "Custom-built HT metering cubicles with CT/PT chambers for utility tie-ups and consumer connections — MSEDCL/discom compliant.",
+    longDescription: "We design and fabricate HT (high-tension) metering cubicles tailored to your project requirements. Each cubicle houses Current Transformers (CT), Potential Transformers (PT) and energy meters within a sealed, tamper-proof chamber built per MSEDCL and discom specifications. Used in industrial plants, commercial buildings and large residential complexes for utility billing tie-ups.",
+    image: "https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "MSEDCL / discom approved designs",
+      "Indoor & outdoor variants",
+      "Class 0.2 / 0.5 accuracy options",
+      "Sealed tamper-proof chambers",
+      "HT/LT configurations from 11 kV to 33 kV",
+    ],
+  },
+  {
+    slug: "ct-pt-repair",
+    title: "CT & PT Repair",
+    description: "On-site and workshop repair of Current & Potential Transformers — re-winding, insulation rebuild, ratio correction and final testing.",
+    longDescription: "Our specialised workshop refurbishes Current and Potential Transformers from all major brands. From minor insulation damage to complete re-winding, our technicians restore performance to factory spec — typically at 60–70 % of the cost of replacement. Every repaired unit undergoes ratio, polarity and insulation testing before delivery.",
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Workshop & on-site repair",
+      "Re-winding to original spec",
+      "Insulation rebuild & oil filtration",
+      "Pre-delivery testing (IEC 61869)",
+      "Warranty on repaired units",
+    ],
+  },
+  {
+    slug: "epoxy-ct-pt-fixing",
+    title: "Epoxy CT/PT Fixing",
+    description: "Supply and installation of epoxy resin-cast CT/PT units in metering panels, indoor and outdoor, sized to your load and accuracy class.",
+    longDescription: "Epoxy resin cast CTs and PTs are the modern standard for switchgear and metering panels — compact, maintenance-free and rated for harsh indoor and outdoor environments. We supply units sized exactly to your primary current rating, burden and accuracy class, then carry out the fixing, terminations and post-installation testing.",
+    image: "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Indoor / outdoor / wet-location rated",
+      "All standard ratios (5 A to 6300 A primary)",
+      "Class 0.2, 0.5, 1.0 accuracy",
+      "On-site fixing & wiring",
+      "Polarity & ratio verified",
+    ],
+  },
+  {
+    slug: "ct-pt-testing",
+    title: "Testing of CT & PT",
+    description: "Ratio, polarity, burden, insulation resistance and routine testing of CTs and PTs as per IS/IEC 61869 standards.",
+    longDescription: "Periodic testing of CTs and PTs is mandatory for accurate metering, protection co-ordination and safety. We carry out the full suite of tests per IS/IEC 61869 — ratio, polarity, burden, insulation resistance, primary injection and secondary loop verification — issuing certified test reports for MSEDCL submission or internal audits.",
+    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Ratio & polarity testing",
+      "Burden & accuracy verification",
+      "Insulation resistance (Megger)",
+      "Primary injection up to 2000 A",
+      "Certified test reports",
+    ],
+  },
+  {
+    slug: "electrical-licensing",
+    title: "Electrical Licensing",
+    description: "Liaison and documentation for new electrical connections, contractor licensing renewals and MSEDCL/Electrical Inspector approvals.",
+    longDescription: "Navigating MSEDCL approvals, Electrical Inspector certifications and contractor license renewals can be slow and paper-heavy. We handle the entire process on your behalf — from initial application and drawings to inspection co-ordination and final commissioning — letting you focus on the project.",
+    image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "New connection applications",
+      "Contractor license renewal",
+      "Electrical Inspector certification",
+      "Drawing approvals & one-line diagrams",
+      "End-to-end documentation",
+    ],
+  },
+  {
+    slug: "apfc-automatic-power-factor",
+    title: "APFC — Automatic Power Factor",
+    description: "Design, supply and commissioning of APFC panels — capacitor banks, EPCOS controllers and harmonic filters for optimal power factor.",
+    longDescription: "A poor power factor means higher utility bills and reduced equipment life. Our Automatic Power Factor Correction (APFC) panels keep your facility's power factor near unity automatically — using EPCOS/Schneider/ABB capacitor banks switched by intelligent controllers. We design from scratch based on your connected load profile and install with full commissioning.",
+    image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Capacities from 25 kVAr to 1000 kVAr",
+      "EPCOS / Schneider / ABB capacitors",
+      "Detuned & harmonic-filter options",
+      "Intelligent micro-controller switching",
+      "Pre-commissioning testing & training",
+    ],
+  },
 ];
