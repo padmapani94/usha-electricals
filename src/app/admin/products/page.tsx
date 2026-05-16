@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
-import { listProducts } from "@/lib/products";
+import { listProductsClient } from "@/lib/products-admin";
 import { deleteProduct, updateProduct } from "@/lib/admin-products";
 import { useToasts } from "@/store/toasts";
 import type { Product } from "@/lib/types";
@@ -14,7 +14,7 @@ export default function AdminProductsPage() {
 
   const load = async () => {
     setLoading(true);
-    const list = await listProducts({ limit: 500, includeUnpublished: true });
+    const list = await listProductsClient({ limit: 500, includeUnpublished: true });
     setProducts(list);
     setLoading(false);
   };

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listAllOrders } from "@/lib/orders";
-import { listProducts } from "@/lib/products";
+import { listProductsClient as listProducts } from "@/lib/products-admin";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0, pending: 0 });

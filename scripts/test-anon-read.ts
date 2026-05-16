@@ -20,4 +20,18 @@ const db = new Databases(client);
   for (const d of res.documents as any[]) {
     console.log(`  - ${d.name}  (perms: ${JSON.stringify(d.$permissions)})`);
   }
+  console.log("\nNow trying to read 'electrical wiring' filter directly:");
+  try {
+    const r2 = await db.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!,
+      [Query.equal("slug", "electricalwiring")],
+    );
+    console.log(`  Found ${r2.total} matching products`);
+    for (const d of r2.documents as any[]) {
+      console.log(`  → ${d.name}  perms=${JSON.stringify(d.$permissions)}`);
+    }
+  } catch (e: any) {
+    console.log("  ERROR:", e?.message);
+  }
 })().catch((e) => console.error(e?.message || e));
