@@ -1,13 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/store/cart";
 import { useToasts } from "@/store/toasts";
-import { getCurrentUser } from "@/lib/auth";
-import { createOrder } from "@/lib/orders";
 import { buildEnquiryMessage, whatsappLink, mailtoLink } from "@/lib/enquiry";
-import type { ShippingAddress } from "@/lib/types";
 import { MessageCircle, Mail, Phone, Info } from "lucide-react";
 
 export default function EnquiryPage() {
@@ -16,19 +13,8 @@ export default function EnquiryPage() {
   const clear = useCart((s) => s.clear);
   const router = useRouter();
   const toast = useToasts((s) => s.push);
-  const [user, setUser] = useState<any>(null);
   const [busy, setBusy] = useState<"whatsapp" | "email" | null>(null);
-
-  const [addr, setAddr] = useState<ShippingAddress>({
-    fullName: "", phone: "", email: "",
-    line1: "", line2: "", city: "", state: "Maharashtra", pincode: "", notes: "",
-  });
-
-  useEffect(() => {
-    getCurrentUser().then((u) => {
-      if (u) { setUser(u); setAddr((a) => ({ ...a, fullName: u.name ?? "", email: u.email ?? "" })); }
-    });
-  }, []);
+  const [form, setForm] = useState({ fullName: "", phone: "", notes: "" });
 
   if (items.length === 0 && !busy) {
     return (
@@ -40,34 +26,38 @@ export default function EnquiryPage() {
   }
 
   const logEnquiry = async (method: "whatsapp" | "email") => {
-    // Best-effort logging — don't block the send if Appwrite isn't reachable
-    if (!user) return;
     try {
-      await createOrder({
-        userId: user.$id,
-        items,
-        total,
-        shippingAddress: addr,
-        paymentMethod: method,
+      await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.productId, name: i.name, slug: i.slug, price: i.price, quantity: i.quantity, image: i.image,
+          })),
+          total,
+          fullName: form.fullName,
+          phone: form.phone,
+          notes: form.notes,
+          method,
+        }),
       });
     } catch {}
   };
 
   const send = async (method: "whatsapp" | "email") => {
-    if (!addr.fullName.trim() || !addr.phone.trim()) {
+    if (!form.fullName.trim() || !form.phone.trim()) {
       toast({ message: "Please add your name and phone number", kind: "error" });
       return;
     }
     setBusy(method);
-    const message = buildEnquiryMessage(items, total, addr);
+    const message = buildEnquiryMessage(items, total, { fullName: form.fullName, phone: form.phone, notes: form.notes } as any);
     const url = method === "whatsapp" ? whatsappLink(message) : mailtoLink(message);
     await logEnquiry(method);
-    // Open send link (new tab keeps the cart visible while user composes)
     window.open(url, "_blank");
     toast({ message: method === "whatsapp" ? "WhatsApp opened with your enquiry" : "Email draft ready", kind: "success" });
     setBusy(null);
     clear();
-    router.replace("/account/orders?placed=" + method);
+    router.replace("/?enquiry=" + method);
   };
 
   return (
@@ -81,22 +71,15 @@ export default function EnquiryPage() {
         <div className="space-y-6">
           <section className="card p-6">
             <h3 className="font-semibold text-navy mb-1">Your details</h3>
-            <p className="text-xs text-slate-500 mb-4">Name and phone are required. The rest helps us prepare an accurate quote.</p>
+            <p className="text-xs text-slate-500 mb-4">Just name and phone. Delivery address and the rest gets sorted on the call.</p>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Full Name" required value={addr.fullName} onChange={(v) => setAddr({ ...addr, fullName: v })} />
-              <Field label="Phone" required type="tel" value={addr.phone} onChange={(v) => setAddr({ ...addr, phone: v })} />
-              <Field label="Email" type="email" value={addr.email} onChange={(v) => setAddr({ ...addr, email: v })} />
-              <Field label="Pincode" value={addr.pincode} onChange={(v) => setAddr({ ...addr, pincode: v })} />
+              <Field label="Full Name" required value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
+              <Field label="Phone" required type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
               <div className="md:col-span-2">
-                <Field label="Delivery / Site Address (optional)" value={addr.line1} onChange={(v) => setAddr({ ...addr, line1: v })} />
-              </div>
-              <Field label="City" value={addr.city} onChange={(v) => setAddr({ ...addr, city: v })} />
-              <Field label="State" value={addr.state} onChange={(v) => setAddr({ ...addr, state: v })} />
-              <div className="md:col-span-2">
-                <label className="label">Additional Notes / Requirements</label>
-                <textarea className="input" rows={3} value={addr.notes ?? ""}
-                  onChange={(e) => setAddr({ ...addr, notes: e.target.value })}
-                  placeholder="e.g. installation needed, specific brand preference, bulk quantity, etc." />
+                <label className="label">Additional notes (optional)</label>
+                <textarea className="input" rows={3} value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  placeholder="e.g. installation needed, specific brand preference, delivery location, bulk quantity, etc." />
               </div>
             </div>
           </section>

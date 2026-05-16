@@ -1,17 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingCart, User, X, Zap } from "lucide-react";
+import { Menu, ShoppingCart, X, Zap } from "lucide-react";
 import { useCart } from "@/store/cart";
-import { getCurrentUser, canEdit, logout } from "@/lib/auth";
+import { getCurrentUser, canEdit } from "@/lib/auth";
 
 export default function Header() {
   const count = useCart((s) => s.count());
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then(setUser).catch(() => setUser(null));
+    getCurrentUser().then((u) => setShowAdmin(canEdit(u))).catch(() => setShowAdmin(false));
   }, []);
 
   const nav = [
@@ -49,22 +49,16 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link href="/cart" className="relative p-2 text-navy hover:text-brand-orange transition-colors">
+          <Link href="/cart" className="relative p-2 text-navy hover:text-brand-orange">
             <ShoppingCart size={22} />
             {count > 0 && (
-              <span key={count} className="absolute -top-1 -right-1 bg-brand-orange text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold animate-fade-up shadow ring-2 ring-white">
+              <span className="absolute -top-1 -right-1 bg-brand-orange text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
                 {count}
               </span>
             )}
           </Link>
-          {user ? (
-            <div className="hidden md:flex items-center gap-2">
-              <Link href="/account" className="btn-outline text-xs"><User size={14} /> {user.name?.split(" ")[0] ?? "Account"}</Link>
-              {canEdit(user) && <Link href="/admin" className="btn-secondary text-xs">Admin</Link>}
-              <button className="text-xs text-slate-500 hover:text-navy" onClick={async () => { await logout(); setUser(null); }}>Sign out</button>
-            </div>
-          ) : (
-            <Link href="/login" className="hidden md:inline-flex btn-primary text-xs">Sign in</Link>
+          {showAdmin && (
+            <Link href="/admin" className="hidden md:inline-flex btn-secondary text-xs">Admin</Link>
           )}
           <button className="md:hidden p-2 text-navy" onClick={() => setOpen(!open)}>
             {open ? <X size={22} /> : <Menu size={22} />}
@@ -77,14 +71,8 @@ export default function Header() {
           {nav.map((n) => (
             <Link key={n.href} href={n.href} className="block py-2 text-slate-700" onClick={() => setOpen(false)}>{n.label}</Link>
           ))}
-          {user ? (
-            <>
-              <Link href="/account" className="block py-2 text-slate-700" onClick={() => setOpen(false)}>My Account</Link>
-              {canEdit(user) && <Link href="/admin" className="block py-2 text-navy font-semibold" onClick={() => setOpen(false)}>Admin Panel</Link>}
-              <button className="block py-2 text-slate-500" onClick={async () => { await logout(); setUser(null); setOpen(false); }}>Sign out</button>
-            </>
-          ) : (
-            <Link href="/login" className="block py-2 text-brand-orange font-semibold" onClick={() => setOpen(false)}>Sign in / Register</Link>
+          {showAdmin && (
+            <Link href="/admin" className="block py-2 text-navy font-semibold" onClick={() => setOpen(false)}>Admin Panel</Link>
           )}
         </div>
       )}

@@ -21,16 +21,16 @@ function LoginInner() {
 
   return (
     <form onSubmit={submit} className="card p-7">
-      <h1 className="text-2xl font-bold text-navy">Welcome back</h1>
-      <p className="text-sm text-slate-500 mb-6">Sign in to manage orders &amp; AMC.</p>
+      <h1 className="text-2xl font-bold text-navy">Admin sign-in</h1>
+      <p className="text-sm text-slate-500 mb-6">Restricted to administrators and editors.</p>
       <label className="label">Email</label>
       <input className="input mb-3" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
       <label className="label">Password</label>
       <input className="input mb-4" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       {err && <div className="text-red-600 text-sm mb-3">{err}</div>}
       <button className="btn-primary w-full" disabled={busy}>{busy ? "Signing in…" : "Sign In"}</button>
-      <p className="text-sm text-slate-500 mt-4 text-center">
-        New here? <Link href="/register" className="text-brand-orange font-semibold hover:underline">Create an account</Link>
+      <p className="text-xs text-slate-400 mt-4 text-center">
+        No public sign-up. Contact the admin if you need access.
       </p>
     </form>
   );

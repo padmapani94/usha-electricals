@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { getCurrentUser, isAdmin, isEditor, roleOf, type Role } from "@/lib/auth";
-import { Package, ShoppingBag, LayoutDashboard, ArrowLeft, FolderTree, ShieldCheck, PencilRuler } from "lucide-react";
+import { getCurrentUser, isAdmin, isEditor, logout, roleOf, type Role } from "@/lib/auth";
+import { Package, ShoppingBag, LayoutDashboard, ArrowLeft, FolderTree, ShieldCheck, PencilRuler, LogOut } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -72,6 +72,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             );
           })}
+          <button onClick={async () => { await logout(); router.replace("/"); }}
+            className="shrink-0 snap-start flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 transition">
+            <LogOut size={14} /> Sign out
+          </button>
         </nav>
       </div>
 
@@ -95,6 +99,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             );
           })}
+          <button onClick={async () => { await logout(); router.replace("/"); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition text-slate-500 hover:bg-red-50 hover:text-red-600 mt-4 border-t border-slate-200 pt-4">
+            <LogOut size={16} /> Sign out
+          </button>
         </aside>
         <div>{children}</div>
       </div>
