@@ -4,7 +4,7 @@ import { listProducts } from "@/lib/products";
 import { categories } from "@/lib/seed-data";
 import { Search } from "lucide-react";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({
   searchParams,

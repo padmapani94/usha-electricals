@@ -1,10 +1,12 @@
 import type { Product } from "./types";
 import { products as seedProducts } from "./seed-data";
 import { databases, appwriteConfig, isAppwriteConfigured, Query } from "./appwrite";
+import { unstable_noStore as noStore } from "next/cache";
 
 const hasAppwrite = () => isAppwriteConfigured;
 
 export async function listProducts(opts: { category?: string; search?: string; limit?: number; includeUnpublished?: boolean } = {}): Promise<Product[]> {
+  noStore();
   if (!hasAppwrite()) {
     let list = [...seedProducts];
     if (opts.category) list = list.filter((p) => p.category === opts.category);
@@ -44,6 +46,7 @@ export async function getFeatured(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  noStore();
   if (!hasAppwrite()) {
     return seedProducts.find((p) => p.slug === slug) ?? null;
   }
