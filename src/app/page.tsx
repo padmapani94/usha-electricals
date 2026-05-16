@@ -9,7 +9,7 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import { getFeatured, listProducts } from "@/lib/products";
 import { brands, categories, clients, services } from "@/lib/seed-data";
 
-export const revalidate = 60;
+export const revalidate = 30;
 
 const CATEGORY_ICON: Record<string, React.ReactNode> = {
   "ups-systems": <BatteryCharging size={22} />,
