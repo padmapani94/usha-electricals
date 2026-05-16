@@ -136,7 +136,7 @@ export default function ImageUploader({ value, onChange }: Props) {
       {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
 
       {value.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
           {value.map((url, i) => (
             <div key={url} className="relative group aspect-square rounded border border-slate-200 overflow-hidden bg-slate-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}

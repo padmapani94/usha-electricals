@@ -108,16 +108,19 @@ export default function ProductForm({ initial }: { initial?: Product }) {
           <input className="input" type="number" min={0} required value={form.stock}
             onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} />
         </div>
-        <div className="flex items-end gap-4">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} disabled={editorMode} />
-            Feature on homepage
-          </label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.published !== false} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
-            Published (visible on site)
-          </label>
-        </div>
+      </div>
+
+      {/* Toggles — separate row so they don't share a grid column */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+        <label className="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} disabled={editorMode} />
+          Feature on homepage
+          {editorMode && <span className="text-[10px] text-slate-400">(admin only)</span>}
+        </label>
+        <label className="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={form.published !== false} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
+          Published (visible on site)
+        </label>
       </div>
 
       <div>
