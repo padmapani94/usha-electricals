@@ -137,7 +137,7 @@ export default async function HomePage() {
         <Reveal>
           <Heading eyebrow="Shop by category" title="Everything Electrical, Under One Roof" />
         </Reveal>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-8">
           {categories.map((c, i) => (
             <Reveal key={c.slug} delay={i * 60}>
               <Link
