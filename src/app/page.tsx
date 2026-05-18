@@ -110,19 +110,21 @@ export default async function HomePage() {
 
       {/* USP STRIP */}
       <section className="border-y border-slate-200 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="max-w-7xl mx-auto py-6 text-sm
+                        md:px-4 md:grid md:grid-cols-4 md:gap-4
+                        flex md:block gap-4 overflow-x-auto px-4 snap-x snap-mandatory scrollbar-hide">
           {[
             { icon: <ShieldCheck className="text-brand-orange" />, title: "Licensed Contractor", sub: "M.L. No. 34090" },
             { icon: <Award className="text-brand-orange" />, title: "Trusted Brands", sub: "APC, Schneider, ABB & more" },
             { icon: <Wrench className="text-brand-orange" />, title: "On-site Service", sub: "Repair, AMC, installation" },
             { icon: <Zap className="text-brand-orange" />, title: "Best Rates", sub: "Discount over MRP" },
           ].map((u, i) => (
-            <Reveal key={u.title} delay={i * 80}>
-              <div className="flex items-center gap-3 group">
-                <div className="bg-white rounded-md p-2 border border-slate-200 group-hover:border-brand-orange group-hover:scale-110 transition">{u.icon}</div>
-                <div>
-                  <div className="font-semibold text-navy">{u.title}</div>
-                  <div className="text-xs text-slate-500">{u.sub}</div>
+            <Reveal key={u.title} delay={i * 80} className="shrink-0 snap-start min-w-[240px] md:min-w-0">
+              <div className="flex items-center gap-3 group h-full">
+                <div className="bg-white rounded-md p-2 border border-slate-200 group-hover:border-brand-orange group-hover:scale-110 transition shrink-0">{u.icon}</div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-navy whitespace-nowrap md:whitespace-normal">{u.title}</div>
+                  <div className="text-xs text-slate-500 whitespace-nowrap md:whitespace-normal">{u.sub}</div>
                 </div>
               </div>
             </Reveal>
