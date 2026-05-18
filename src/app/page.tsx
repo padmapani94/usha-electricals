@@ -188,7 +188,7 @@ export default async function HomePage() {
               </Link>
             </Reveal>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mt-8">
             {showcase.slice(0, 8).map((p, i) => (
               <Reveal key={p.slug} delay={i * 60}>
                 <ProductCard product={p} />

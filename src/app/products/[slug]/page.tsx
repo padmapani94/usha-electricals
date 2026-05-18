@@ -122,7 +122,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       {related.length > 0 && (
         <div className="mt-16">
           <h2 className="text-xl font-bold text-navy mb-5">Related Products</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
             {related.map((p) => (
               <Link key={p.slug} href={`/products/${p.slug}`} className="card overflow-hidden">
                 <div className="aspect-square bg-slate-100">
