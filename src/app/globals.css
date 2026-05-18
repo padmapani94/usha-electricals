@@ -55,3 +55,14 @@ html, body {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+
+/* Compact auto-scroll used by the USP strip on mobile.
+   - 18s loop is fast enough to feel alive without being distracting
+   - Pause on hover or when the user touches it */
+.auto-marquee {
+  display: flex;
+  width: max-content;
+  animation: scroll 18s linear infinite;
+}
+.auto-marquee:hover,
+.auto-marquee:active { animation-play-state: paused; }
