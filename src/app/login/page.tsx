@@ -1,13 +1,12 @@
 "use client";
 import { Suspense, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { login } from "@/lib/auth";
 
 function LoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
-  const next = sp.get("next") ?? "/account";
+  const next = sp.get("next") ?? "/admin";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
