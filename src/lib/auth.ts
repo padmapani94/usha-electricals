@@ -2,6 +2,8 @@
 import { account } from "./appwrite";
 
 export async function login(email: string, password: string) {
+  // If a session already exists (e.g. switching accounts), tear it down first
+  try { await account.deleteSession("current"); } catch {}
   await account.createEmailPasswordSession(email, password);
   return await account.get();
 }
