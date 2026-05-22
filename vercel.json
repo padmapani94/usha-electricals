@@ -9,5 +9,11 @@
     { "source": "/account", "destination": "/admin", "permanent": false },
     { "source": "/account/:path*", "destination": "/admin", "permanent": false },
     { "source": "/register", "destination": "/login", "permanent": false }
+  ],
+  "crons": [
+    {
+      "path": "/api/keepalive",
+      "schedule": "30 2 * * *"
+    }
   ]
 }
