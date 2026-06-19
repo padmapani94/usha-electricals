@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight, ShieldCheck, Zap, Award, Phone, Wrench, Building2,
-  Battery, Sun, Network, Gauge, Lightbulb, Cpu, BatteryCharging,
+  Gauge, Hammer, FlaskConical,
 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import Reveal from "@/components/Reveal";
@@ -12,14 +12,11 @@ import { brands, categories, clients, services } from "@/lib/seed-data";
 export const revalidate = 30;
 
 const CATEGORY_ICON: Record<string, React.ReactNode> = {
-  "ups-systems": <BatteryCharging size={22} />,
-  "inverters-batteries": <Battery size={22} />,
-  "stabilizers-transformers": <Zap size={22} />,
-  "electrical-panels": <Cpu size={22} />,
-  "solar-systems": <Sun size={22} />,
-  "networking": <Network size={22} />,
-  "meters-monitoring": <Gauge size={22} />,
-  "lighting-wiring": <Lightbulb size={22} />,
+  "testing-equipment": <FlaskConical size={22} />,
+  "measuring-instruments": <Gauge size={22} />,
+  "electrical": <Zap size={22} />,
+  "power-tools": <Wrench size={22} />,
+  "hand-tools": <Hammer size={22} />,
 };
 
 export default async function HomePage() {
@@ -53,7 +50,7 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={200}>
               <p className="mt-4 sm:mt-5 text-navy-100 text-base sm:text-lg max-w-xl">
-                From APFC panels to home inverters — Usha Electricals delivers high-quality, affordable electrical &amp; automation solutions across Maharashtra.
+                Testing equipment, measuring instruments, electrical accessories, power &amp; hand tools — Usha Electricals delivers quality products and expert services across Maharashtra.
               </p>
             </Reveal>
             <Reveal delay={300}>
@@ -79,8 +76,8 @@ export default async function HomePage() {
               <div aria-hidden className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-brand-orange/30 to-transparent blur-xl opacity-60" />
               <div className="relative grid grid-cols-2 gap-4 h-full">
                 <FeatureTile
-                  icon={<Zap />}
-                  label="UPS Systems"
+                  icon={<FlaskConical />}
+                  label="Testing Equipment"
                   delay={0}
                   image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"
                 />
