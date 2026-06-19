@@ -23,17 +23,18 @@ export default function Footer() {
             <li><Link href="/services" className="hover:text-brand-orange">Services</Link></li>
             <li><Link href="/about" className="hover:text-brand-orange">About Us</Link></li>
             <li><Link href="/contact" className="hover:text-brand-orange">Contact</Link></li>
-            <li><Link href="/account/orders" className="hover:text-brand-orange">Track Order</Link></li>
+            <li><Link href="/cart" className="hover:text-brand-orange">Enquiry Cart</Link></li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-semibold mb-3">Categories</h4>
           <ul className="space-y-2 text-sm text-navy-100">
-            <li><Link href="/products?category=ups-systems" className="hover:text-brand-orange">UPS Systems</Link></li>
-            <li><Link href="/products?category=solar-systems" className="hover:text-brand-orange">Solar Systems</Link></li>
-            <li><Link href="/products?category=electrical-panels" className="hover:text-brand-orange">Electrical Panels</Link></li>
-            <li><Link href="/products?category=stabilizers-transformers" className="hover:text-brand-orange">Stabilizers</Link></li>
+            <li><Link href="/products?category=testing-equipment" className="hover:text-brand-orange">Testing Equipment</Link></li>
+            <li><Link href="/products?category=measuring-instruments" className="hover:text-brand-orange">Measuring Instruments</Link></li>
+            <li><Link href="/products?category=electrical" className="hover:text-brand-orange">Electrical</Link></li>
+            <li><Link href="/products?category=power-tools" className="hover:text-brand-orange">Power Tools</Link></li>
+            <li><Link href="/products?category=hand-tools" className="hover:text-brand-orange">Hand Tools</Link></li>
           </ul>
         </div>
 
