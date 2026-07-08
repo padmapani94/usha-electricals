@@ -88,6 +88,10 @@ async function setupProducts() {
   await attr(productsCol, "boolean", "featured", false, { default: false });
   await attr(productsCol, "boolean", "published", false, { default: true });
   await attr(productsCol, "string", "tags", false, { size: 64, array: true });
+
+  await safe("products.brand_idx (index)", () =>
+    db.createIndex(databaseId, productsCol, "brand_idx", "key" as any, ["brand"], ["ASC"] as any),
+  );
 }
 
 async function setupOrders() {

@@ -1,5 +1,5 @@
 "use client";
-import { databases, appwriteConfig, ID } from "./appwrite";
+import { databases, appwriteConfig, ID, Query } from "./appwrite";
 import type { Product } from "./types";
 
 export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
@@ -45,4 +45,53 @@ export async function getProductById(id: string): Promise<Product | null> {
   } catch {
     return null;
   }
+}
+
+async function getProductsByBrand(brand: string): Promise<Product[]> {
+  const res = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.productsCollectionId,
+    [Query.equal("brand", brand), Query.limit(500)],
+  );
+  return res.documents as unknown as Product[];
+}
+
+/** Increase or decrease the price of every product of a brand, by percent or a fixed rupee amount. Leaves `mrp` untouched. */
+export async function bulkAdjustPriceByBrand(
+  brand: string,
+  direction: "increase" | "decrease",
+  mode: "percent" | "fixed",
+  value: number,
+): Promise<{ updated: number }> {
+  const items = await getProductsByBrand(brand);
+  const sign = direction === "increase" ? 1 : -1;
+  await Promise.all(
+    items.filter((p) => p.$id).map((p) => {
+      const delta = mode === "percent" ? p.price * (value / 100) : value;
+      const newPrice = Math.max(1, Math.round(p.price + sign * delta));
+      return updateProduct(p.$id!, { price: newPrice });
+    }),
+  );
+  return { updated: items.length };
+}
+
+/** Apply a % discount to every product of a brand. Uses the existing `mrp` as the baseline if one is already set (so re-applying doesn't compound), otherwise anchors `mrp` to the current price. */
+export async function bulkApplyDiscountByBrand(brand: string, discountPercent: number): Promise<{ updated: number }> {
+  const items = await getProductsByBrand(brand);
+  await Promise.all(
+    items.filter((p) => p.$id).map((p) => {
+      const baseline = p.mrp && p.mrp > 0 ? p.mrp : p.price;
+      const newPrice = Math.max(1, Math.round(baseline * (1 - discountPercent / 100)));
+      return updateProduct(p.$id!, { mrp: baseline, price: newPrice });
+    }),
+  );
+  return { updated: items.length };
+}
+
+/** Remove any active discount from every product of a brand — resets price back to mrp. */
+export async function bulkClearDiscountByBrand(brand: string): Promise<{ updated: number }> {
+  const items = await getProductsByBrand(brand);
+  const discounted = items.filter((p) => p.$id && p.mrp && p.mrp > p.price);
+  await Promise.all(discounted.map((p) => updateProduct(p.$id!, { price: p.mrp })));
+  return { updated: discounted.length };
 }

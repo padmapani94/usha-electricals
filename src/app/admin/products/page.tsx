@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
 import { listProductsClient } from "@/lib/products-admin";
@@ -8,18 +8,28 @@ import { useToasts } from "@/store/toasts";
 import type { Product } from "@/lib/types";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [brandFilter, setBrandFilter] = useState("");
   const toast = useToasts((s) => s.push);
 
   const load = async () => {
     setLoading(true);
     const list = await listProductsClient({ limit: 500, includeUnpublished: true });
-    setProducts(list);
+    setAllProducts(list);
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
+  const brands = useMemo(
+    () => Array.from(new Set(allProducts.map((p) => p.brand?.trim()).filter(Boolean) as string[])).sort(),
+    [allProducts],
+  );
+  const products = useMemo(
+    () => (brandFilter ? allProducts.filter((p) => p.brand === brandFilter) : allProducts),
+    [allProducts, brandFilter],
+  );
 
   const remove = async (p: Product) => {
     if (!p.$id) { alert("Cannot delete a seed product. Run the seed script first."); return; }
@@ -41,8 +51,22 @@ export default function AdminProductsPage() {
   return (
     <div>
       <div className="flex justify-between items-center gap-3 mb-5 md:mb-6 flex-wrap">
-        <h1 className="text-xl md:text-2xl font-bold text-navy">Products ({products.length})</h1>
-        <Link href="/admin/products/new" className="btn-primary text-sm"><Plus size={16} className="mr-1" /> Add Product</Link>
+        <h1 className="text-xl md:text-2xl font-bold text-navy">
+          Products ({products.length}{brandFilter ? ` of ${allProducts.length}` : ""})
+        </h1>
+        <div className="flex items-center gap-2 flex-wrap">
+          {brands.length > 0 && (
+            <select
+              value={brandFilter}
+              onChange={(e) => setBrandFilter(e.target.value)}
+              className="input w-auto text-sm py-1.5"
+            >
+              <option value="">All brands</option>
+              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          )}
+          <Link href="/admin/products/new" className="btn-primary text-sm"><Plus size={16} className="mr-1" /> Add Product</Link>
+        </div>
       </div>
 
       {loading ? (

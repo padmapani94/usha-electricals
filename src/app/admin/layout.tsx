@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getCurrentUser, isAdmin, isEditor, logout, roleOf, type Role } from "@/lib/auth";
-import { Package, ShoppingBag, LayoutDashboard, ArrowLeft, FolderTree, ShieldCheck, PencilRuler, LogOut } from "lucide-react";
+import { Package, ShoppingBag, LayoutDashboard, ArrowLeft, FolderTree, ShieldCheck, PencilRuler, LogOut, Tag } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -41,11 +41,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const adminNav = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/brands", label: "Brands", icon: Tag },
     { href: "/admin/categories", label: "Categories", icon: FolderTree },
     { href: "/admin/orders", label: "Enquiries", icon: ShoppingBag },
   ];
   const editorNav = [
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/brands", label: "Brands", icon: Tag },
     { href: "/admin/categories", label: "Categories", icon: FolderTree },
   ];
   const nav = role === "admin" ? adminNav : editorNav;
