@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { categories as seedCategories } from "@/lib/seed-data";
 import { createProduct, updateProduct } from "@/lib/admin-products";
 import { listCategories } from "@/lib/admin-categories";
+import { listProductsClient } from "@/lib/products-admin";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
 import type { Category, Product } from "@/lib/types";
 import { ShieldCheck, PencilRuler, Hash } from "lucide-react";
@@ -16,10 +17,15 @@ export default function ProductForm({ initial }: { initial?: Product }) {
   const [err, setErr] = useState("");
   const [admin, setAdmin] = useState<boolean | null>(null);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
+  const [brands, setBrands] = useState<string[]>([]);
 
   useEffect(() => {
     getCurrentUser().then((u) => setAdmin(isAdmin(u)));
     listCategories().then(setCategories);
+    listProductsClient({ limit: 500, includeUnpublished: true }).then((list) => {
+      const unique = Array.from(new Set(list.map((p) => p.brand?.trim()).filter(Boolean))) as string[];
+      setBrands(unique.sort());
+    });
   }, []);
 
   const [form, setForm] = useState<Product>({
@@ -91,7 +97,17 @@ export default function ProductForm({ initial }: { initial?: Product }) {
         </div>
         <div>
           <label className="label">Brand</label>
-          <input className="input" value={form.brand ?? ""} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+          <input
+            className="input"
+            list="brand-options"
+            value={form.brand ?? ""}
+            onChange={(e) => setForm({ ...form, brand: e.target.value })}
+            placeholder="Select existing or type a new brand"
+            autoComplete="off"
+          />
+          <datalist id="brand-options">
+            {brands.map((b) => <option key={b} value={b} />)}
+          </datalist>
         </div>
         <div>
           <label className="label">Price (₹) *</label>
