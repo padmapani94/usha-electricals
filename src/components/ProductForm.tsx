@@ -18,6 +18,9 @@ export default function ProductForm({ initial }: { initial?: Product }) {
   const [admin, setAdmin] = useState<boolean | null>(null);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
   const [brands, setBrands] = useState<string[]>([]);
+  // Slug auto-follows the name until the user edits the slug field directly.
+  // Existing products (edit mode) already have a slug, so never auto-overwrite it.
+  const [slugTouched, setSlugTouched] = useState(!!initial?.slug);
 
   useEffect(() => {
     getCurrentUser().then((u) => setAdmin(isAdmin(u)));
@@ -83,11 +86,12 @@ export default function ProductForm({ initial }: { initial?: Product }) {
         <div>
           <label className="label">Name *</label>
           <input className="input" required value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || slugify(e.target.value) })} />
+            onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugTouched ? form.slug : slugify(e.target.value) })} />
         </div>
         <div>
           <label className="label">Slug *</label>
-          <input className="input" required value={form.slug} onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} />
+          <input className="input" required value={form.slug}
+            onChange={(e) => { setSlugTouched(true); setForm({ ...form, slug: slugify(e.target.value) }); }} />
         </div>
         <div>
           <label className="label">Category *</label>
