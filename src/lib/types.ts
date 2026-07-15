@@ -21,6 +21,9 @@ export type Product = {
   featured?: boolean;
   published?: boolean;
   tags?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
+  imageAlt?: string;
   $createdAt?: string;
 };
 

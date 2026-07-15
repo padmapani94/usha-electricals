@@ -11,9 +11,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const product = await getProductBySlug(params.slug);
   if (!product) return { title: "Product not found" };
   const tags = product.tags ?? [];
+  const metaTitle = product.metaTitle?.trim() || `${product.name} | Usha Electricals`;
+  const metaDescription = product.metaDescription?.trim() || product.description.slice(0, 160);
   return {
-    title: `${product.name} | Usha Electricals`,
-    description: product.description.slice(0, 160),
+    title: { absolute: metaTitle },
+    description: metaDescription,
     keywords: [
       ...tags,
       product.brand,
@@ -21,8 +23,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       "Usha Electricals", "Nagpur",
     ].filter(Boolean) as string[],
     openGraph: {
-      title: product.name,
-      description: product.description.slice(0, 160),
+      title: metaTitle,
+      description: metaDescription,
       images: product.images?.length ? [product.images[0]] : undefined,
       type: "website",
     },
@@ -59,7 +61,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <div className="grid md:grid-cols-2 gap-6 md:gap-10">
         <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.images?.[0] ?? "/placeholder.png"} alt={product.name} className="w-full h-full object-cover" />
+          <img src={product.images?.[0] ?? "/placeholder.png"} alt={product.imageAlt?.trim() || product.name} className="w-full h-full object-cover" />
           {discount > 0 && (
             <span className="absolute top-3 left-3 bg-brand-orange text-white text-sm px-3 py-1 rounded font-semibold">{discount}% OFF</span>
           )}
@@ -127,7 +129,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <Link key={p.slug} href={`/products/${p.slug}`} className="card overflow-hidden">
                 <div className="aspect-square bg-slate-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.images?.[0]} alt={p.name} className="w-full h-full object-cover" />
+                  <img src={p.images?.[0]} alt={p.imageAlt?.trim() || p.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-3">
                   <div className="text-sm font-semibold text-navy line-clamp-2">{p.name}</div>

@@ -7,7 +7,7 @@ import { listCategories } from "@/lib/admin-categories";
 import { listProductsClient } from "@/lib/products-admin";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
 import type { Category, Product } from "@/lib/types";
-import { ShieldCheck, PencilRuler, Hash } from "lucide-react";
+import { ShieldCheck, PencilRuler, Hash, Type, AlignLeft, ImageIcon } from "lucide-react";
 import TagsInput from "@/components/TagsInput";
 import ImageUploader from "@/components/ImageUploader";
 
@@ -45,6 +45,9 @@ export default function ProductForm({ initial }: { initial?: Product }) {
     featured: initial?.featured ?? false,
     published: initial?.published !== false,
     tags: initial?.tags ?? [],
+    metaTitle: initial?.metaTitle ?? "",
+    metaDescription: initial?.metaDescription ?? "",
+    imageAlt: initial?.imageAlt ?? "",
   } as Product);
 
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
@@ -164,6 +167,48 @@ export default function ProductForm({ initial }: { initial?: Product }) {
         />
         <p className="text-xs text-slate-500 mt-1">
           These keywords boost on-site search and are emitted as <code>&lt;meta name="keywords"&gt;</code> on the product page. Press <kbd className="px-1 bg-slate-100 rounded text-[10px]">Enter</kbd> or <kbd className="px-1 bg-slate-100 rounded text-[10px]">,</kbd> after each tag.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="label flex items-center gap-1"><Type size={14} /> Meta Title</label>
+          <input
+            className="input"
+            maxLength={70}
+            value={form.metaTitle ?? ""}
+            onChange={(e) => setForm({ ...form, metaTitle: e.target.value })}
+            placeholder={form.name || "Defaults to the product name"}
+          />
+          <p className={`text-xs mt-1 ${(form.metaTitle ?? "").length > 60 ? "text-brand-orange" : "text-slate-500"}`}>
+            {(form.metaTitle ?? "").length}/60 recommended — the browser tab &amp; Google search result title.
+          </p>
+        </div>
+        <div>
+          <label className="label flex items-center gap-1"><ImageIcon size={14} /> Image Alt Text</label>
+          <input
+            className="input"
+            maxLength={160}
+            value={form.imageAlt ?? ""}
+            onChange={(e) => setForm({ ...form, imageAlt: e.target.value })}
+            placeholder={form.name || "Defaults to the product name"}
+          />
+          <p className="text-xs text-slate-500 mt-1">Describes the product photo for screen readers &amp; Google Images.</p>
+        </div>
+      </div>
+
+      <div>
+        <label className="label flex items-center gap-1"><AlignLeft size={14} /> Meta Description</label>
+        <textarea
+          className="input"
+          rows={2}
+          maxLength={300}
+          value={form.metaDescription ?? ""}
+          onChange={(e) => setForm({ ...form, metaDescription: e.target.value })}
+          placeholder="Defaults to the first 160 characters of the Description field above"
+        />
+        <p className={`text-xs mt-1 ${(form.metaDescription ?? "").length > 160 ? "text-brand-orange" : "text-slate-500"}`}>
+          {(form.metaDescription ?? "").length}/160 recommended — shown under the title in Google search results.
         </p>
       </div>
 

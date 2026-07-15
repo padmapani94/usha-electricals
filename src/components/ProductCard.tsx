@@ -44,7 +44,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={product.images?.[0] ?? "/placeholder.png"}
-          alt={product.name}
+          alt={product.imageAlt?.trim() || product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
         />
         {discount > 0 && (
