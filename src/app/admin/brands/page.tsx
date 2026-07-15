@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { TrendingUp, TrendingDown, Tag, X, Percent, IndianRupee } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TrendingUp, TrendingDown, Tag, X, Percent, IndianRupee, Plus } from "lucide-react";
 import { listProductsClient } from "@/lib/products-admin";
 import { bulkAdjustPriceByBrand, bulkApplyDiscountByBrand, bulkClearDiscountByBrand } from "@/lib/admin-products";
 import { useToasts } from "@/store/toasts";
@@ -20,6 +21,7 @@ export default function AdminBrandsPage() {
   const [search, setSearch] = useState("");
   const [priceModalBrand, setPriceModalBrand] = useState<string | null>(null);
   const [discountModalBrand, setDiscountModalBrand] = useState<string | null>(null);
+  const [addBrandOpen, setAddBrandOpen] = useState(false);
   const toast = useToasts((s) => s.push);
 
   const load = async () => {
@@ -62,13 +64,18 @@ export default function AdminBrandsPage() {
     <div>
       <div className="flex justify-between items-center gap-3 mb-5 md:mb-6 flex-wrap">
         <h1 className="text-xl md:text-2xl font-bold text-navy">Brands ({brands.length})</h1>
-        <input
-          type="text"
-          placeholder="Search brand…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input max-w-[220px] text-sm"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search brand…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input max-w-[220px] text-sm"
+          />
+          <button onClick={() => setAddBrandOpen(true)} className="btn-primary text-sm whitespace-nowrap">
+            <Plus size={16} className="mr-1" /> Add Brand
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -188,6 +195,12 @@ export default function AdminBrandsPage() {
           onApplied={async (msg) => { await load(); toast({ message: msg, kind: "success" }); setDiscountModalBrand(null); }}
         />
       )}
+      {addBrandOpen && (
+        <AddBrandModal
+          existingBrands={brands.map((b) => b.brand)}
+          onClose={() => setAddBrandOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -203,6 +216,43 @@ function ModalShell({ title, onClose, children }: { title: string; onClose: () =
         {children}
       </div>
     </div>
+  );
+}
+
+function AddBrandModal({ existingBrands, onClose }: { existingBrands: string[]; onClose: () => void }) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const alreadyExists = existingBrands.some((b) => b.toLowerCase() === name.trim().toLowerCase());
+
+  const proceed = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    router.push(`/admin/products/new?brand=${encodeURIComponent(trimmed)}`);
+  };
+
+  return (
+    <ModalShell title="Add Brand" onClose={onClose}>
+      <p className="text-xs text-slate-500 mb-4">
+        Brands aren&apos;t stored on their own — a brand shows up here as soon as a product uses it.
+        Type the new brand name below and you&apos;ll be taken to Add Product with it pre-filled.
+      </p>
+      <label className="text-xs text-slate-500">Brand name</label>
+      <input
+        type="text"
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && proceed()}
+        placeholder="e.g. Siemens"
+        className="input mt-1 mb-1"
+      />
+      {alreadyExists && (
+        <p className="text-xs text-brand-orange mb-3">A brand named &quot;{name.trim()}&quot; already exists.</p>
+      )}
+      <button disabled={!name.trim()} onClick={proceed} className="btn-primary w-full justify-center disabled:opacity-50 mt-3">
+        Continue to Add Product
+      </button>
+    </ModalShell>
   );
 }
 

@@ -12,7 +12,7 @@ import TagsInput from "@/components/TagsInput";
 import ImageUploader from "@/components/ImageUploader";
 import RichTextEditor from "@/components/RichTextEditor";
 
-export default function ProductForm({ initial }: { initial?: Product }) {
+export default function ProductForm({ initial, initialBrand }: { initial?: Product; initialBrand?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -37,7 +37,7 @@ export default function ProductForm({ initial }: { initial?: Product }) {
     slug: initial?.slug ?? "",
     description: initial?.description ?? "",
     category: initial?.category ?? seedCategories[0].slug,
-    brand: initial?.brand ?? "",
+    brand: initial?.brand ?? initialBrand ?? "",
     price: initial?.price ?? 0,
     mrp: initial?.mrp ?? undefined,
     stock: initial?.stock ?? 0,
