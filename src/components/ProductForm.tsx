@@ -10,6 +10,7 @@ import type { Category, Product } from "@/lib/types";
 import { ShieldCheck, PencilRuler, Hash, Type, AlignLeft, ImageIcon } from "lucide-react";
 import TagsInput from "@/components/TagsInput";
 import ImageUploader from "@/components/ImageUploader";
+import RichTextEditor from "@/components/RichTextEditor";
 
 export default function ProductForm({ initial }: { initial?: Product }) {
   const router = useRouter();
@@ -148,8 +149,7 @@ export default function ProductForm({ initial }: { initial?: Product }) {
 
       <div>
         <label className="label">Description *</label>
-        <textarea className="input" rows={4} required value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <RichTextEditor value={form.description} onChange={(description) => setForm({ ...form, description })} required />
       </div>
 
       <div>

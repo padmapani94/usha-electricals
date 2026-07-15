@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getProductBySlug, listProducts } from "@/lib/products";
 import AddToCartButton from "./AddToCartButton";
 import { categories } from "@/lib/seed-data";
+import { richTextToHtml, richTextToPlainText } from "@/lib/richtext";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!product) return { title: "Product not found" };
   const tags = product.tags ?? [];
   const metaTitle = product.metaTitle?.trim() || `${product.name} | Usha Electricals`;
-  const metaDescription = product.metaDescription?.trim() || product.description.slice(0, 160);
+  const metaDescription = product.metaDescription?.trim() || richTextToPlainText(product.description).slice(0, 160);
   return {
     title: { absolute: metaTitle },
     description: metaDescription,
@@ -79,7 +80,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
           <div className="text-xs text-slate-500 mt-1">Inclusive of all taxes · GST invoice on request</div>
 
-          <p className="text-slate-700 mt-5 leading-relaxed">{product.description}</p>
+          <div
+            className="text-slate-700 mt-5 leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-navy"
+            dangerouslySetInnerHTML={{ __html: richTextToHtml(product.description) }}
+          />
 
           <div className="mt-5 flex items-center gap-2 text-sm">
             {product.stock > 0 ? (
