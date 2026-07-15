@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <span className="text-slate-400 line-through">₹{product.mrp.toLocaleString("en-IN")}</span>
             )}
           </div>
-          <div className="text-xs text-slate-500 mt-1">Inclusive of all taxes · GST invoice on request</div>
+          <div className="text-xs text-slate-500 mt-1">Exclusive of GST · GST invoice provided on request</div>
 
           <div
             className="text-slate-700 mt-5 leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-navy [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul:last-child]:mb-0 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol:last-child]:mb-0 [&_li]:mb-1"
