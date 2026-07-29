@@ -95,6 +95,9 @@ async function setupProducts() {
   await safe("products.brand_idx (index)", () =>
     db.createIndex(databaseId, productsCol, "brand_idx", "key" as any, ["brand"], ["ASC"] as any),
   );
+  await safe("products.name_fulltext_idx (index)", () =>
+    db.createIndex(databaseId, productsCol, "name_fulltext_idx", "fulltext" as any, ["name"]),
+  );
 }
 
 async function setupOrders() {

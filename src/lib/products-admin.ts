@@ -22,6 +22,13 @@ export async function listProductsClient(opts: { category?: string; search?: str
     return list;
   } catch (err) {
     console.error("[listProductsClient] failed:", err);
-    return seedProducts;
+    let list = [...seedProducts];
+    if (opts.category) list = list.filter((p) => p.category === opts.category);
+    if (opts.search) {
+      const q = opts.search.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || (p.brand ?? "").toLowerCase().includes(q));
+    }
+    if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
+    return list;
   }
 }

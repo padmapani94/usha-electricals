@@ -68,7 +68,20 @@ export async function listProducts(opts: { category?: string; search?: string; l
     return list;
   } catch (err) {
     console.error("[listProducts] Server fetch failed, falling back to seed:", err);
-    return seedProducts.filter((p) => opts.includeUnpublished || p.published !== false);
+    let list = [...seedProducts];
+    if (opts.category) list = list.filter((p) => p.category === opts.category);
+    if (opts.search) {
+      const q = opts.search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          (p.brand ?? "").toLowerCase().includes(q) ||
+          (p.tags ?? []).some((t) => t.toLowerCase().includes(q)),
+      );
+    }
+    if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
+    return list.slice(0, opts.limit ?? 100);
   }
 }
 
