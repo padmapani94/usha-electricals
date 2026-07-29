@@ -26,7 +26,7 @@ export default function AdminBrandsPage() {
 
   const load = async () => {
     setLoading(true);
-    const list = await listProductsClient({ limit: 500, includeUnpublished: true });
+    const list = await listProductsClient({ includeUnpublished: true });
     setProducts(list);
     setLoading(false);
   };

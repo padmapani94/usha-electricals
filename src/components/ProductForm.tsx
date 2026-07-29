@@ -26,7 +26,7 @@ export default function ProductForm({ initial, initialBrand }: { initial?: Produ
   useEffect(() => {
     getCurrentUser().then((u) => setAdmin(isAdmin(u)));
     listCategories().then(setCategories);
-    listProductsClient({ limit: 500, includeUnpublished: true }).then((list) => {
+    listProductsClient({ includeUnpublished: true }).then((list) => {
       const unique = Array.from(new Set(list.map((p) => p.brand?.trim()).filter(Boolean))) as string[];
       setBrands(unique.sort());
     });

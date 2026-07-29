@@ -33,60 +33,77 @@ async function appwriteRest<T>(path: string, params: Record<string, any> = {}): 
   return (await res.json()) as T;
 }
 
+function filterSeed(opts: { category?: string; search?: string; includeUnpublished?: boolean; limit?: number }): Product[] {
+  let list = [...seedProducts];
+  if (opts.category) list = list.filter((p) => p.category === opts.category);
+  if (opts.search) {
+    const q = opts.search.toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        (p.brand ?? "").toLowerCase().includes(q) ||
+        (p.tags ?? []).some((t) => t.toLowerCase().includes(q)),
+    );
+  }
+  if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
+  return list.slice(0, opts.limit ?? 100);
+}
+
+// Safety ceiling for the "fetch everything" path -- not a realistic catalog size,
+// just a guard against a runaway pagination loop.
+const MAX_FETCH_ALL = 5000;
+const PAGE_SIZE = 100;
+
 export async function listProducts(opts: { category?: string; search?: string; limit?: number; includeUnpublished?: boolean } = {}): Promise<Product[]> {
   noStore();
-  if (!hasAppwrite()) {
-    let list = [...seedProducts];
-    if (opts.category) list = list.filter((p) => p.category === opts.category);
-    if (opts.search) {
-      const q = opts.search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          (p.brand ?? "").toLowerCase().includes(q) ||
-          (p.tags ?? []).some((t) => t.toLowerCase().includes(q)),
-      );
-    }
-    if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
-    return list.slice(0, opts.limit ?? 100);
-  }
+  if (!hasAppwrite()) return filterSeed(opts);
 
   try {
     const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
     const colId = process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!;
-    const queries: string[] = [JSON.stringify({ method: "limit", values: [opts.limit ?? 100] })];
-    if (opts.category) queries.push(JSON.stringify({ method: "equal", attribute: "category", values: [opts.category] }));
-    if (opts.search) queries.push(JSON.stringify({ method: "search", attribute: "name", values: [opts.search] }));
+    const baseQueries: string[] = [];
+    if (opts.category) baseQueries.push(JSON.stringify({ method: "equal", attribute: "category", values: [opts.category] }));
+    if (opts.search) baseQueries.push(JSON.stringify({ method: "search", attribute: "name", values: [opts.search] }));
 
-    const data = await appwriteRest<{ documents: any[]; total: number }>(
-      `/databases/${dbId}/collections/${colId}/documents`,
-      { queries },
-    );
-    let list = data.documents as unknown as Product[];
+    let documents: any[];
+    if (opts.limit) {
+      // Caller wants a specific bounded page (e.g. homepage teaser, related products).
+      const queries = [...baseQueries, JSON.stringify({ method: "limit", values: [opts.limit] })];
+      const data = await appwriteRest<{ documents: any[]; total: number }>(
+        `/databases/${dbId}/collections/${colId}/documents`,
+        { queries },
+      );
+      documents = data.documents;
+    } else {
+      // No limit given -> the caller wants the FULL matching set. Page through it via
+      // cursor pagination instead of an arbitrary single-request cap.
+      documents = [];
+      let cursor: string | null = null;
+      while (documents.length < MAX_FETCH_ALL) {
+        const queries = [...baseQueries, JSON.stringify({ method: "limit", values: [PAGE_SIZE] })];
+        if (cursor) queries.push(JSON.stringify({ method: "cursorAfter", values: [cursor] }));
+        const data = await appwriteRest<{ documents: any[]; total: number }>(
+          `/databases/${dbId}/collections/${colId}/documents`,
+          { queries },
+        );
+        documents.push(...data.documents);
+        if (data.documents.length < PAGE_SIZE) break;
+        cursor = data.documents[data.documents.length - 1].$id;
+      }
+    }
+
+    let list = documents as unknown as Product[];
     if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
     return list;
   } catch (err) {
     console.error("[listProducts] Server fetch failed, falling back to seed:", err);
-    let list = [...seedProducts];
-    if (opts.category) list = list.filter((p) => p.category === opts.category);
-    if (opts.search) {
-      const q = opts.search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          (p.brand ?? "").toLowerCase().includes(q) ||
-          (p.tags ?? []).some((t) => t.toLowerCase().includes(q)),
-      );
-    }
-    if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
-    return list.slice(0, opts.limit ?? 100);
+    return filterSeed(opts);
   }
 }
 
 export async function getFeatured(): Promise<Product[]> {
-  const all = await listProducts({ limit: 200 });
+  const all = await listProducts({});
   return all.filter((p) => p.featured);
 }
 

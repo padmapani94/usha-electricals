@@ -48,12 +48,18 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 async function getProductsByBrand(brand: string): Promise<Product[]> {
-  const res = await databases.listDocuments(
-    appwriteConfig.databaseId,
-    appwriteConfig.productsCollectionId,
-    [Query.equal("brand", brand), Query.limit(500)],
-  );
-  return res.documents as unknown as Product[];
+  const PAGE_SIZE = 100;
+  const documents: any[] = [];
+  let cursor: string | undefined;
+  while (documents.length < 5000) {
+    const queries = [Query.equal("brand", brand), Query.limit(PAGE_SIZE)];
+    if (cursor) queries.push(Query.cursorAfter(cursor));
+    const res = await databases.listDocuments(appwriteConfig.databaseId, appwriteConfig.productsCollectionId, queries);
+    documents.push(...res.documents);
+    if (res.documents.length < PAGE_SIZE) break;
+    cursor = res.documents[res.documents.length - 1].$id;
+  }
+  return documents as unknown as Product[];
 }
 
 /** Increase or decrease the price of every product of a brand, by percent or a fixed rupee amount. Leaves `mrp` untouched. */

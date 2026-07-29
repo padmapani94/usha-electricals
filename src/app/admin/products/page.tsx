@@ -15,7 +15,7 @@ export default function AdminProductsPage() {
 
   const load = async () => {
     setLoading(true);
-    const list = await listProductsClient({ limit: 500, includeUnpublished: true });
+    const list = await listProductsClient({ includeUnpublished: true });
     setAllProducts(list);
     setLoading(false);
   };

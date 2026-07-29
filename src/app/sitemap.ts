@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Individual product pages
   let productRoutes: MetadataRoute.Sitemap = [];
   try {
-    const products = await listProducts({ limit: 500 });
+    const products = await listProducts({});
     productRoutes = products.map((p) => ({
       url: `${SITE_URL}/products/${p.slug}`,
       lastModified: p.$createdAt ? new Date(p.$createdAt) : now,

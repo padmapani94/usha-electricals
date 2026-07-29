@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [products, orders] = await Promise.all([listProducts({ limit: 500 }), listAllOrders().catch(() => [])]);
+        const [products, orders] = await Promise.all([listProducts({}), listAllOrders().catch(() => [])]);
         setStats({
           products: products.length,
           orders: orders.length,
