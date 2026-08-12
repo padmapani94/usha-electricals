@@ -91,6 +91,11 @@ async function setupProducts() {
   await attr(productsCol, "string", "metaTitle", false, { size: 70 });
   await attr(productsCol, "string", "metaDescription", false, { size: 300 });
   await attr(productsCol, "string", "imageAlt", false, { size: 160 });
+  // Note: the products collection is near Appwrite's per-document row-size budget --
+  // keep this small (JSON-stringified size/price/mrp/stock rows only need a few
+  // hundred bytes even for a dozen variants). Adding new large string attributes
+  // beyond this may fail with "maximum number or size of attributes has been reached".
+  await attr(productsCol, "string", "variants", false, { size: 2000 });
 
   await safe("products.brand_idx (index)", () =>
     db.createIndex(databaseId, productsCol, "brand_idx", "key" as any, ["brand"], ["ASC"] as any),

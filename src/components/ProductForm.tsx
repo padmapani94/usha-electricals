@@ -6,11 +6,12 @@ import { createProduct, updateProduct } from "@/lib/admin-products";
 import { listCategories } from "@/lib/admin-categories";
 import { listProductsClient } from "@/lib/products-admin";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
-import type { Category, Product } from "@/lib/types";
-import { ShieldCheck, PencilRuler, Hash, Type, AlignLeft, ImageIcon } from "lucide-react";
+import type { Category, Product, ProductVariant } from "@/lib/types";
+import { ShieldCheck, PencilRuler, Hash, Type, AlignLeft, ImageIcon, Ruler, Plus, X } from "lucide-react";
 import TagsInput from "@/components/TagsInput";
 import ImageUploader from "@/components/ImageUploader";
 import RichTextEditor from "@/components/RichTextEditor";
+import { parseVariants, cheapestVariant } from "@/lib/variants";
 
 export default function ProductForm({ initial, initialBrand }: { initial?: Product; initialBrand?: string }) {
   const router = useRouter();
@@ -52,6 +53,23 @@ export default function ProductForm({ initial, initialBrand }: { initial?: Produ
   } as Product);
 
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
+  const [variants, setVariants] = useState<ProductVariant[]>(initial ? parseVariants(initial) : []);
+
+  // While size variants exist, the base price/MRP/stock fields are derived from them
+  // (cheapest variant's price/mrp, summed stock) so the rest of the site — cards, brand
+  // bulk-price tools, sitemap — can keep reading product.price without being variant-aware.
+  useEffect(() => {
+    if (variants.length === 0) return;
+    const cheapest = cheapestVariant(variants);
+    if (!cheapest) return;
+    const totalStock = variants.reduce((s, v) => s + (Number(v.stock) || 0), 0);
+    setForm((f) => ({ ...f, price: cheapest.price, mrp: cheapest.mrp, stock: totalStock }));
+  }, [variants]);
+
+  const addVariantRow = () => setVariants((v) => [...v, { size: "", price: 0, mrp: undefined, stock: 0 }]);
+  const updateVariantRow = (i: number, patch: Partial<ProductVariant>) =>
+    setVariants((v) => v.map((row, idx) => (idx === i ? { ...row, ...patch } : row)));
+  const removeVariantRow = (i: number) => setVariants((v) => v.filter((_, idx) => idx !== i));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(""); setBusy(true);
@@ -59,7 +77,11 @@ export default function ProductForm({ initial, initialBrand }: { initial?: Produ
       if (images.length === 0) throw new Error("Please add at least one product image.");
       let specsObj: Record<string, string> = {};
       try { specsObj = JSON.parse(typeof form.specs === "string" ? form.specs : "{}"); } catch { throw new Error("Specs must be valid JSON"); }
-      const payload = { ...form, images, specs: specsObj };
+      const cleanVariants = variants
+        .map((v) => ({ ...v, size: v.size.trim() }))
+        .filter((v) => v.size);
+      if (variants.some((v) => !v.size.trim())) throw new Error("Every size variant needs a size label (or remove the empty row).");
+      const payload = { ...form, images, specs: specsObj, variants: cleanVariants.length > 0 ? JSON.stringify(cleanVariants) : "" };
       if (initial?.$id) await updateProduct(initial.$id, payload);
       else await createProduct(payload);
       router.push("/admin/products");
@@ -119,19 +141,65 @@ export default function ProductForm({ initial, initialBrand }: { initial?: Produ
         </div>
         <div>
           <label className="label">Price (₹) *</label>
-          <input className="input" type="number" min={0} required value={form.price}
+          <input className="input disabled:bg-slate-100 disabled:text-slate-500" type="number" min={0} required
+            disabled={variants.length > 0}
+            value={form.price}
             onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
         </div>
         <div>
           <label className="label">MRP (₹)</label>
-          <input className="input" type="number" min={0} value={form.mrp ?? ""}
+          <input className="input disabled:bg-slate-100 disabled:text-slate-500" type="number" min={0}
+            disabled={variants.length > 0}
+            value={form.mrp ?? ""}
             onChange={(e) => setForm({ ...form, mrp: e.target.value ? Number(e.target.value) : undefined })} />
         </div>
         <div>
           <label className="label">Stock *</label>
-          <input className="input" type="number" min={0} required value={form.stock}
+          <input className="input disabled:bg-slate-100 disabled:text-slate-500" type="number" min={0} required
+            disabled={variants.length > 0}
+            value={form.stock}
             onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} />
         </div>
+      </div>
+      {variants.length > 0 && (
+        <p className="text-xs text-slate-400 -mt-3">Price, MRP and Stock above are auto-set from the size variants below (cheapest price, total stock).</p>
+      )}
+
+      <div>
+        <label className="label flex items-center gap-1"><Ruler size={14} /> Size Variants (optional)</label>
+        <p className="text-xs text-slate-500 mb-2">
+          Sell this product in multiple sizes (e.g. cable length, rating) with their own price and stock. Leave empty for a single-price product.
+        </p>
+        {variants.length > 0 && (
+          <div className="space-y-2 mb-2">
+            {variants.map((v, i) => (
+              <div key={i} className="grid grid-cols-[1.3fr_1fr_1fr_0.8fr_auto] gap-2 items-center">
+                <input
+                  className="input text-sm" placeholder="Size, e.g. 25m"
+                  value={v.size} onChange={(e) => updateVariantRow(i, { size: e.target.value })}
+                />
+                <input
+                  className="input text-sm" type="number" min={0} placeholder="Price"
+                  value={v.price || ""} onChange={(e) => updateVariantRow(i, { price: Number(e.target.value) })}
+                />
+                <input
+                  className="input text-sm" type="number" min={0} placeholder="MRP (optional)"
+                  value={v.mrp ?? ""} onChange={(e) => updateVariantRow(i, { mrp: e.target.value ? Number(e.target.value) : undefined })}
+                />
+                <input
+                  className="input text-sm" type="number" min={0} placeholder="Stock"
+                  value={v.stock || ""} onChange={(e) => updateVariantRow(i, { stock: Number(e.target.value) })}
+                />
+                <button type="button" onClick={() => removeVariantRow(i)} className="p-2 text-red-500 hover:bg-red-50 rounded" title="Remove size">
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <button type="button" onClick={addVariantRow} className="btn-outline text-xs">
+          <Plus size={14} className="mr-1" /> Add Size
+        </button>
       </div>
 
       {/* Toggles — separate row so they don't share a grid column */}

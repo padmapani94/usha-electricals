@@ -6,6 +6,13 @@ export type Category = {
   image?: string;
 };
 
+export type ProductVariant = {
+  size: string;
+  price: number;
+  mrp?: number;
+  stock: number;
+};
+
 export type Product = {
   $id?: string;
   name: string;
@@ -24,6 +31,10 @@ export type Product = {
   metaTitle?: string;
   metaDescription?: string;
   imageAlt?: string;
+  /** Optional size/price variants (e.g. cable length, insulation rating). When present,
+   * `price`/`mrp`/`stock` above are auto-synced to the cheapest variant so the rest of the
+   * site (cards, brand tools, sitemap) can keep reading them without being variant-aware. */
+  variants?: ProductVariant[] | string;
   $createdAt?: string;
 };
 

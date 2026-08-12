@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProductBySlug, listProducts } from "@/lib/products";
-import AddToCartButton from "./AddToCartButton";
+import VariantPicker from "./VariantPicker";
 import { categories } from "@/lib/seed-data";
 import { richTextToHtml, richTextToPlainText } from "@/lib/richtext";
 
@@ -72,30 +72,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
           {product.brand && <div className="text-sm text-slate-500 uppercase tracking-wider">{product.brand}</div>}
           <h1 className="text-2xl md:text-3xl font-bold text-navy mt-1">{product.name}</h1>
 
-          <div className="flex items-baseline gap-3 mt-4">
-            <span className="text-3xl font-bold text-navy">₹{product.price.toLocaleString("en-IN")}</span>
-            {product.mrp && product.mrp > product.price && (
-              <span className="text-slate-400 line-through">₹{product.mrp.toLocaleString("en-IN")}</span>
-            )}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">Exclusive of GST · GST invoice provided on request</div>
+          <VariantPicker product={product} />
 
           <div
             className="text-slate-700 mt-5 leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-navy [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul:last-child]:mb-0 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol:last-child]:mb-0 [&_li]:mb-1"
             dangerouslySetInnerHTML={{ __html: richTextToHtml(product.description) }}
           />
-
-          <div className="mt-5 flex items-center gap-2 text-sm">
-            {product.stock > 0 ? (
-              <span className="text-green-600 font-semibold">● In Stock ({product.stock})</span>
-            ) : (
-              <span className="text-red-500 font-semibold">● Out of Stock</span>
-            )}
-          </div>
-
-          <div className="mt-6">
-            <AddToCartButton product={product} />
-          </div>
 
           {Object.keys(specs).length > 0 && (
             <div className="mt-8 border-t border-slate-200 pt-6">
