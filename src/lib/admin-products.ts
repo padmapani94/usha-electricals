@@ -1,6 +1,7 @@
 "use client";
 import { databases, appwriteConfig, ID, Query } from "./appwrite";
-import type { Product } from "./types";
+import type { Product, ProductVariant } from "./types";
+import { parseVariants, cheapestVariant } from "./variants";
 
 export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
   return databases.createDocument(
@@ -62,7 +63,33 @@ async function getProductsByBrand(brand: string): Promise<Product[]> {
   return documents as unknown as Product[];
 }
 
-/** Increase or decrease the price of every product of a brand, by percent or a fixed rupee amount. Leaves `mrp` untouched. */
+/**
+ * Runs a price transform on a product: if it has size variants, applies the transform to
+ * every variant's price and recomputes the derived base price/mrp/stock (cheapest variant,
+ * summed stock) so they stay in sync; otherwise applies it directly to the flat product
+ * price. Keeps every bulk tool below working correctly for both variant and non-variant
+ * products without duplicating this branching in each one.
+ */
+function applyToProductOrVariants(
+  p: Product,
+  transformFlat: (p: Product) => Partial<Product>,
+  transformVariant: (v: ProductVariant) => ProductVariant,
+): Partial<Product> {
+  const variants = parseVariants(p);
+  if (variants.length === 0) return transformFlat(p);
+
+  const nextVariants = variants.map(transformVariant);
+  const cheapest = cheapestVariant(nextVariants)!;
+  const totalStock = nextVariants.reduce((s, v) => s + (Number(v.stock) || 0), 0);
+  return {
+    variants: JSON.stringify(nextVariants),
+    price: cheapest.price,
+    mrp: cheapest.mrp,
+    stock: totalStock,
+  };
+}
+
+/** Increase or decrease the price of every product of a brand, by percent or a fixed rupee amount. Leaves `mrp` untouched. Applies per-size for products with variants. */
 export async function bulkAdjustPriceByBrand(
   brand: string,
   direction: "increase" | "decrease",
@@ -71,33 +98,61 @@ export async function bulkAdjustPriceByBrand(
 ): Promise<{ updated: number }> {
   const items = await getProductsByBrand(brand);
   const sign = direction === "increase" ? 1 : -1;
+  const adjust = (price: number) => {
+    const delta = mode === "percent" ? price * (value / 100) : value;
+    return Math.max(1, Math.round(price + sign * delta));
+  };
   await Promise.all(
     items.filter((p) => p.$id).map((p) => {
-      const delta = mode === "percent" ? p.price * (value / 100) : value;
-      const newPrice = Math.max(1, Math.round(p.price + sign * delta));
-      return updateProduct(p.$id!, { price: newPrice });
+      const update = applyToProductOrVariants(
+        p,
+        (prod) => ({ price: adjust(prod.price) }),
+        (v) => ({ ...v, price: adjust(v.price) }),
+      );
+      return updateProduct(p.$id!, update);
     }),
   );
   return { updated: items.length };
 }
 
-/** Apply a % discount to every product of a brand. Uses the existing `mrp` as the baseline if one is already set (so re-applying doesn't compound), otherwise anchors `mrp` to the current price. */
+/** Apply a % discount to every product of a brand. Uses the existing `mrp` as the baseline if one is already set (so re-applying doesn't compound), otherwise anchors `mrp` to the current price. Applies per-size for products with variants. */
 export async function bulkApplyDiscountByBrand(brand: string, discountPercent: number): Promise<{ updated: number }> {
   const items = await getProductsByBrand(brand);
+  const discount = (price: number, mrp?: number) => {
+    const baseline = mrp && mrp > 0 ? mrp : price;
+    return { mrp: baseline, price: Math.max(1, Math.round(baseline * (1 - discountPercent / 100))) };
+  };
   await Promise.all(
     items.filter((p) => p.$id).map((p) => {
-      const baseline = p.mrp && p.mrp > 0 ? p.mrp : p.price;
-      const newPrice = Math.max(1, Math.round(baseline * (1 - discountPercent / 100)));
-      return updateProduct(p.$id!, { mrp: baseline, price: newPrice });
+      const update = applyToProductOrVariants(
+        p,
+        (prod) => discount(prod.price, prod.mrp),
+        (v) => ({ ...v, ...discount(v.price, v.mrp) }),
+      );
+      return updateProduct(p.$id!, update);
     }),
   );
   return { updated: items.length };
 }
 
-/** Remove any active discount from every product of a brand — resets price back to mrp. */
+/** Remove any active discount from every product of a brand — resets price back to mrp. Clears per-size for products with variants (only sizes that actually have an active discount). */
 export async function bulkClearDiscountByBrand(brand: string): Promise<{ updated: number }> {
   const items = await getProductsByBrand(brand);
-  const discounted = items.filter((p) => p.$id && p.mrp && p.mrp > p.price);
-  await Promise.all(discounted.map((p) => updateProduct(p.$id!, { price: p.mrp })));
-  return { updated: discounted.length };
+  const eligible = items.filter((p) => {
+    if (!p.$id) return false;
+    const variants = parseVariants(p);
+    if (variants.length > 0) return variants.some((v) => v.mrp && v.mrp > v.price);
+    return !!(p.mrp && p.mrp > p.price);
+  });
+  await Promise.all(
+    eligible.map((p) => {
+      const update = applyToProductOrVariants(
+        p,
+        (prod) => ({ price: prod.mrp }),
+        (v) => ({ ...v, price: v.mrp && v.mrp > 0 ? v.mrp : v.price }),
+      );
+      return updateProduct(p.$id!, update);
+    }),
+  );
+  return { updated: eligible.length };
 }
