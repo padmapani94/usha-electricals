@@ -7,10 +7,18 @@
  * unambiguous "activity" per Appwrite Cloud's tracker, so this
  * guarantees the inactivity timer resets every run.
  *
+ * Also snapshots the full product catalog to Vercel Blob storage on every
+ * successful run. If Appwrite still ends up paused before the next run,
+ * listProducts()/getProductBySlug() fall back to this snapshot instead of
+ * the tiny hardcoded seed-data.ts, so the real catalog (not just the
+ * original ~22 launch products) keeps showing on the site.
+ *
  * Secured by Authorization: Bearer <CRON_SECRET>. Vercel Cron sets
  * this header automatically when triggering the route on a schedule.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { listProducts } from "@/lib/products";
+import { saveCatalogSnapshot } from "@/lib/catalog-snapshot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,11 +87,26 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // 3. Snapshot the full catalog while Appwrite is confirmed reachable.
+    //    Non-fatal: the keepalive ping itself already succeeded above.
+    let snapshotCount = 0;
+    let snapshotError: string | null = null;
+    try {
+      const allProducts = await listProducts({ includeUnpublished: true });
+      await saveCatalogSnapshot(allProducts);
+      snapshotCount = allProducts.length;
+    } catch (err: any) {
+      snapshotError = err?.message || String(err);
+      console.error("[keepalive] snapshot failed (non-fatal):", snapshotError);
+    }
+
     return NextResponse.json({
       ok: true,
       pingedAt: now,
       action: "create+delete",
       createdId,
+      snapshotCount,
+      snapshotError,
     });
   } catch (err: any) {
     console.error("[keepalive] fetch failed:", err?.message || err);

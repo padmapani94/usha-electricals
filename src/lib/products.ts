@@ -3,6 +3,7 @@
 import type { Product } from "./types";
 import { products as seedProducts } from "./seed-data";
 import { unstable_noStore as noStore } from "next/cache";
+import { loadCatalogSnapshot } from "./catalog-snapshot";
 
 const hasAppwrite = () =>
   !!process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID &&
@@ -33,8 +34,11 @@ async function appwriteRest<T>(path: string, params: Record<string, any> = {}): 
   return (await res.json()) as T;
 }
 
-function filterSeed(opts: { category?: string; search?: string; includeUnpublished?: boolean; limit?: number }): Product[] {
-  let list = [...seedProducts];
+function filterProductList(
+  source: Product[],
+  opts: { category?: string; search?: string; includeUnpublished?: boolean; limit?: number },
+): Product[] {
+  let list = [...source];
   if (opts.category) list = list.filter((p) => p.category === opts.category);
   if (opts.search) {
     const q = opts.search.toLowerCase();
@@ -47,7 +51,17 @@ function filterSeed(opts: { category?: string; search?: string; includeUnpublish
     );
   }
   if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
-  return list.slice(0, opts.limit ?? 100);
+  if (opts.limit) list = list.slice(0, opts.limit);
+  return list;
+}
+
+// Appwrite unreachable (paused/down) or not configured -- prefer the last-known-good
+// full-catalog snapshot (saved by the keepalive cron) over the tiny hardcoded seed
+// file, so the real catalog keeps showing instead of reverting to the ~22 launch
+// products. Falls back to seed-data.ts only if no snapshot has ever been saved.
+async function fallbackProducts(opts: { category?: string; search?: string; includeUnpublished?: boolean; limit?: number }): Promise<Product[]> {
+  const snapshot = await loadCatalogSnapshot();
+  return filterProductList(snapshot ?? seedProducts, opts);
 }
 
 // Safety ceiling for the "fetch everything" path -- not a realistic catalog size,
@@ -57,7 +71,7 @@ const PAGE_SIZE = 100;
 
 export async function listProducts(opts: { category?: string; search?: string; limit?: number; includeUnpublished?: boolean } = {}): Promise<Product[]> {
   noStore();
-  if (!hasAppwrite()) return filterSeed(opts);
+  if (!hasAppwrite()) return fallbackProducts(opts);
 
   try {
     const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
@@ -97,8 +111,8 @@ export async function listProducts(opts: { category?: string; search?: string; l
     if (!opts.includeUnpublished) list = list.filter((p) => p.published !== false);
     return list;
   } catch (err) {
-    console.error("[listProducts] Server fetch failed, falling back to seed:", err);
-    return filterSeed(opts);
+    console.error("[listProducts] Server fetch failed, falling back to catalog snapshot:", err);
+    return fallbackProducts(opts);
   }
 }
 
@@ -125,7 +139,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     );
     return (data.documents[0] as unknown as Product) ?? null;
   } catch (err) {
-    console.error("[getProductBySlug] Server fetch failed:", err);
-    return seedProducts.find((p) => p.slug === slug) ?? null;
+    console.error("[getProductBySlug] Server fetch failed, falling back to catalog snapshot:", err);
+    const snapshot = await loadCatalogSnapshot();
+    const source = snapshot ?? seedProducts;
+    return source.find((p) => p.slug === slug) ?? null;
   }
 }
