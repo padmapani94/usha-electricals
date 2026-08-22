@@ -1,9 +1,14 @@
-// Server-only product fetcher: uses Appwrite REST with API key + cache:no-store
+// Server-only product fetcher: uses Appwrite REST with API key.
+// Cached via Next.js's Data Cache (tag "products", 1h TTL) instead of cache:no-store --
+// admin saves trigger instant on-demand revalidation via /api/revalidate, so this cache
+// window is just a safety net for reads that don't go through the admin save flow
+// (crawlers, repeat visitors, etc.), not a source of visible staleness.
 // Admin client pages should import from ./products-admin instead.
 import type { Product } from "./types";
 import { products as seedProducts } from "./seed-data";
-import { unstable_noStore as noStore } from "next/cache";
 import { loadCatalogSnapshot } from "./catalog-snapshot";
+
+const REVALIDATE_SECONDS = 3600;
 
 const hasAppwrite = () =>
   !!process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID &&
@@ -25,7 +30,7 @@ async function appwriteRest<T>(path: string, params: Record<string, any> = {}): 
       "X-Appwrite-Project": projectId,
       "X-Appwrite-Key": apiKey,
     },
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_SECONDS, tags: ["products"] },
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -70,7 +75,6 @@ const MAX_FETCH_ALL = 5000;
 const PAGE_SIZE = 100;
 
 export async function listProducts(opts: { category?: string; search?: string; limit?: number; includeUnpublished?: boolean } = {}): Promise<Product[]> {
-  noStore();
   if (!hasAppwrite()) return fallbackProducts(opts);
 
   try {
@@ -117,12 +121,30 @@ export async function listProducts(opts: { category?: string; search?: string; l
 }
 
 export async function getFeatured(): Promise<Product[]> {
-  const all = await listProducts({});
-  return all.filter((p) => p.featured);
+  if (!hasAppwrite()) {
+    const list = await fallbackProducts({});
+    return list.filter((p) => p.featured);
+  }
+  try {
+    const dbId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+    const colId = process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!;
+    const queries: string[] = [
+      JSON.stringify({ method: "equal", attribute: "featured", values: [true] }),
+      JSON.stringify({ method: "limit", values: [8] }),
+    ];
+    const data = await appwriteRest<{ documents: any[]; total: number }>(
+      `/databases/${dbId}/collections/${colId}/documents`,
+      { queries },
+    );
+    return (data.documents as unknown as Product[]).filter((p) => p.published !== false);
+  } catch (err) {
+    console.error("[getFeatured] Server fetch failed, falling back to catalog snapshot:", err);
+    const list = await fallbackProducts({});
+    return list.filter((p) => p.featured);
+  }
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  noStore();
   if (!hasAppwrite()) {
     return seedProducts.find((p) => p.slug === slug) ?? null;
   }

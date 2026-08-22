@@ -4,7 +4,10 @@ import { listProducts } from "@/lib/products";
 import { categories } from "@/lib/seed-data";
 import { Search } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+// Not force-dynamic: the underlying listProducts() fetch is cached (see
+// src/lib/products.ts) and revalidated on-demand by admin saves via
+// /api/revalidate, which cuts Appwrite read volume far more than this page
+// re-rendering per request for a ?category=/?q= filter costs.
 
 export default async function ProductsPage({
   searchParams,

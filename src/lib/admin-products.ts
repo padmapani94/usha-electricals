@@ -3,8 +3,16 @@ import { databases, appwriteConfig, ID, Query } from "./appwrite";
 import type { Product, ProductVariant } from "./types";
 import { parseVariants, cheapestVariant } from "./variants";
 
+// Public product pages cache Appwrite reads for up to an hour to cut down read
+// volume (see src/lib/products.ts) -- this is what makes an admin save show up on
+// the live site immediately instead of waiting out that window. Fire-and-forget:
+// never let a revalidation hiccup block or fail an admin save.
+function triggerRevalidate() {
+  fetch("/api/revalidate", { method: "POST" }).catch(() => {});
+}
+
 export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
-  return databases.createDocument(
+  const doc = await databases.createDocument(
     appwriteConfig.databaseId,
     appwriteConfig.productsCollectionId,
     ID.unique(),
@@ -13,26 +21,32 @@ export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
       specs: typeof data.specs === "object" ? JSON.stringify(data.specs) : data.specs,
     },
   );
+  triggerRevalidate();
+  return doc;
 }
 
 export async function updateProduct(id: string, data: Partial<Product>) {
   const payload: any = { ...data };
   if (payload.specs && typeof payload.specs === "object") payload.specs = JSON.stringify(payload.specs);
   delete payload.$id; delete payload.$createdAt;
-  return databases.updateDocument(
+  const doc = await databases.updateDocument(
     appwriteConfig.databaseId,
     appwriteConfig.productsCollectionId,
     id,
     payload,
   );
+  triggerRevalidate();
+  return doc;
 }
 
 export async function deleteProduct(id: string) {
-  return databases.deleteDocument(
+  const res = await databases.deleteDocument(
     appwriteConfig.databaseId,
     appwriteConfig.productsCollectionId,
     id,
   );
+  triggerRevalidate();
+  return res;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {

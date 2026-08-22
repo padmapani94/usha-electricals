@@ -9,7 +9,10 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import { getFeatured, listProducts } from "@/lib/products";
 import { brands, categories, clients, services } from "@/lib/seed-data";
 
-export const revalidate = 30;
+// Cached for up to an hour (not 30s) -- admin saves trigger instant on-demand
+// revalidation via /api/revalidate, so this window is a read-volume safety net
+// for crawler/repeat traffic, not a source of visible staleness.
+export const revalidate = 3600;
 
 const CATEGORY_ICON: Record<string, React.ReactNode> = {
   "testing-equipment": <FlaskConical size={22} />,

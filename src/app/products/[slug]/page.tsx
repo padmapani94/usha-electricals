@@ -6,7 +6,10 @@ import VariantPicker from "./VariantPicker";
 import { categories } from "@/lib/seed-data";
 import { richTextToHtml, richTextToPlainText } from "@/lib/richtext";
 
-export const dynamic = "force-dynamic";
+// Cached for up to an hour (not force-dynamic) -- admin saves trigger instant
+// on-demand revalidation via /api/revalidate, so this is a read-volume safety
+// net for crawler/repeat traffic, not a source of visible staleness.
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
