@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { categories as seedCategories } from "@/lib/seed-data";
 import { createProduct, updateProduct } from "@/lib/admin-products";
 import { listCategories } from "@/lib/admin-categories";
-import { listProductsClient } from "@/lib/products-admin";
+import { listBrandNames } from "@/lib/products-admin";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
 import type { Category, Product, ProductVariant } from "@/lib/types";
 import { ShieldCheck, PencilRuler, Hash, Type, AlignLeft, ImageIcon, Ruler, Plus, X } from "lucide-react";
@@ -27,10 +27,7 @@ export default function ProductForm({ initial, initialBrand }: { initial?: Produ
   useEffect(() => {
     getCurrentUser().then((u) => setAdmin(isAdmin(u)));
     listCategories().then(setCategories);
-    listProductsClient({ includeUnpublished: true }).then((list) => {
-      const unique = Array.from(new Set(list.map((p) => p.brand?.trim()).filter(Boolean))) as string[];
-      setBrands(unique.sort());
-    });
+    listBrandNames().then((unique) => setBrands(unique.sort()));
   }, []);
 
   const [form, setForm] = useState<Product>({

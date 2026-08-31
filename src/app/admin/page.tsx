@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listAllOrders } from "@/lib/orders";
-import { listProductsClient as listProducts } from "@/lib/products-admin";
+import { fallbackProductCount } from "@/lib/products-admin";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0, pending: 0 });
@@ -10,9 +10,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [products, orders] = await Promise.all([listProducts({}), listAllOrders().catch(() => [])]);
+        // A dashboard stat card doesn't need millisecond-fresh data -- read the
+        // catalog snapshot (zero Appwrite reads) instead of a full live fetch.
+        const [productCount, orders] = await Promise.all([fallbackProductCount(), listAllOrders().catch(() => [])]);
         setStats({
-          products: products.length,
+          products: productCount,
           orders: orders.length,
           revenue: orders.reduce((s, o) => s + (o.total ?? 0), 0),
           pending: orders.filter((o) => o.status === "pending").length,
