@@ -34,7 +34,7 @@ export default function AdminProductsPage() {
   const remove = async (p: Product) => {
     if (!p.$id) { alert("Cannot delete a seed product. Run the seed script first."); return; }
     if (!confirm(`Delete "${p.name}"? This is permanent.`)) return;
-    try { await deleteProduct(p.$id); await load(); toast({ message: `Deleted "${p.name}"`, kind: "success" }); }
+    try { await deleteProduct(p.$id, p.slug); await load(); toast({ message: `Deleted "${p.name}"`, kind: "success" }); }
     catch (e: any) { alert(e?.message ?? "Delete failed"); }
   };
 
@@ -42,7 +42,7 @@ export default function AdminProductsPage() {
     if (!p.$id) { alert("Cannot toggle a seed product. Run the seed script first."); return; }
     const next = p.published === false;
     try {
-      await updateProduct(p.$id, { published: next });
+      await updateProduct(p.$id, { published: next }, p.slug);
       await load();
       toast({ message: `${next ? "Listed" : "Unlisted"} "${p.name}"`, kind: "info" });
     } catch (e: any) { alert(e?.message ?? "Update failed"); }

@@ -7,8 +7,16 @@ import { parseVariants, cheapestVariant } from "./variants";
 // volume (see src/lib/products.ts) -- this is what makes an admin save show up on
 // the live site immediately instead of waiting out that window. Fire-and-forget:
 // never let a revalidation hiccup block or fail an admin save.
-function triggerRevalidate() {
-  fetch("/api/revalidate", { method: "POST" }).catch(() => {});
+//
+// Pass the product's slug whenever it's known so only THAT product's cached data
+// gets invalidated, not every product's. Omitting it still revalidates the shared
+// list/homepage data, just not any individual product page.
+function triggerRevalidate(slug?: string) {
+  fetch("/api/revalidate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slug }),
+  }).catch(() => {});
 }
 
 export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
@@ -21,11 +29,11 @@ export async function createProduct(data: Omit<Product, "$id" | "$createdAt">) {
       specs: typeof data.specs === "object" ? JSON.stringify(data.specs) : data.specs,
     },
   );
-  triggerRevalidate();
+  triggerRevalidate(data.slug);
   return doc;
 }
 
-export async function updateProduct(id: string, data: Partial<Product>) {
+export async function updateProduct(id: string, data: Partial<Product>, knownSlug?: string) {
   const payload: any = { ...data };
   if (payload.specs && typeof payload.specs === "object") payload.specs = JSON.stringify(payload.specs);
   delete payload.$id; delete payload.$createdAt;
@@ -35,17 +43,17 @@ export async function updateProduct(id: string, data: Partial<Product>) {
     id,
     payload,
   );
-  triggerRevalidate();
+  triggerRevalidate(data.slug ?? knownSlug);
   return doc;
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string, slug?: string) {
   const res = await databases.deleteDocument(
     appwriteConfig.databaseId,
     appwriteConfig.productsCollectionId,
     id,
   );
-  triggerRevalidate();
+  triggerRevalidate(slug);
   return res;
 }
 
@@ -123,7 +131,7 @@ export async function bulkAdjustPriceByBrand(
         (prod) => ({ price: adjust(prod.price) }),
         (v) => ({ ...v, price: adjust(v.price) }),
       );
-      return updateProduct(p.$id!, update);
+      return updateProduct(p.$id!, update, p.slug);
     }),
   );
   return { updated: items.length };
@@ -143,7 +151,7 @@ export async function bulkApplyDiscountByBrand(brand: string, discountPercent: n
         (prod) => discount(prod.price, prod.mrp),
         (v) => ({ ...v, ...discount(v.price, v.mrp) }),
       );
-      return updateProduct(p.$id!, update);
+      return updateProduct(p.$id!, update, p.slug);
     }),
   );
   return { updated: items.length };
@@ -165,7 +173,7 @@ export async function bulkClearDiscountByBrand(brand: string): Promise<{ updated
         (prod) => ({ price: prod.mrp }),
         (v) => ({ ...v, price: v.mrp && v.mrp > 0 ? v.mrp : v.price }),
       );
-      return updateProduct(p.$id!, update);
+      return updateProduct(p.$id!, update, p.slug);
     }),
   );
   return { updated: eligible.length };

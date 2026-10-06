@@ -1,21 +1,31 @@
 // Server-only product fetcher: uses Appwrite REST with API key.
-// Cached via Next.js's Data Cache (tag "products", 1h TTL) instead of cache:no-store --
-// admin saves trigger instant on-demand revalidation via /api/revalidate, so this cache
-// window is just a safety net for reads that don't go through the admin save flow
-// (crawlers, repeat visitors, etc.), not a source of visible staleness.
+// Cached via Next.js's Data Cache (1h TTL) instead of cache:no-store -- admin saves
+// trigger instant on-demand revalidation via /api/revalidate, so this cache window is
+// just a safety net for reads that don't go through the admin save flow (crawlers,
+// repeat visitors, etc.), not a source of visible staleness.
+//
+// IMPORTANT: tags are scoped per-product (tag `product-${slug}`) rather than one shared
+// "products" tag. A single shared tag meant every product edit called revalidateTag()
+// and invalidated the cached data for ALL products at once, not just the one edited --
+// with an actively managed ~480-product catalog (multiple saves/day), that repeatedly
+// busted the entire site's cache well before the 1h window ever elapsed, defeating the
+// cache almost entirely. See src/app/api/revalidate/route.ts for how tags are used on
+// the write side.
 // Admin client pages should import from ./products-admin instead.
 import type { Product } from "./types";
 import { products as seedProducts } from "./seed-data";
 import { loadCatalogSnapshot } from "./catalog-snapshot";
 
 const REVALIDATE_SECONDS = 3600;
+export const PRODUCTS_LIST_TAG = "products-list";
+export const productTag = (slug: string) => `product-${slug}`;
 
 const hasAppwrite = () =>
   !!process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID &&
   process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID !== "your_project_id" &&
   !!process.env.APPWRITE_API_KEY;
 
-async function appwriteRest<T>(path: string, params: Record<string, any> = {}): Promise<T> {
+async function appwriteRest<T>(path: string, params: Record<string, any> = {}, tags: string[] = [PRODUCTS_LIST_TAG]): Promise<T> {
   const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
   const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
   const apiKey = process.env.APPWRITE_API_KEY!;
@@ -30,7 +40,7 @@ async function appwriteRest<T>(path: string, params: Record<string, any> = {}): 
       "X-Appwrite-Project": projectId,
       "X-Appwrite-Key": apiKey,
     },
-    next: { revalidate: REVALIDATE_SECONDS, tags: ["products"] },
+    next: { revalidate: REVALIDATE_SECONDS, tags },
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -158,6 +168,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     const data = await appwriteRest<{ documents: any[]; total: number }>(
       `/databases/${dbId}/collections/${colId}/documents`,
       { queries },
+      [productTag(slug)],
     );
     return (data.documents[0] as unknown as Product) ?? null;
   } catch (err) {
